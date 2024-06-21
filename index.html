@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="Description" content="Put your description here." />
+    <base href="/" />
+
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: sans-serif;
+        background-color: #ededed;
+        width: 100dvw;
+        height: 100dvh;
+      }
+
+      @font-face {
+        font-family: "Bricolage Grotesque";
+        src: url("./assets/fonts/BricolageGrotesque/BricolageGrotesque[opsz,wdth,wght].woff2")
+          format("woff2-variations")
+          url("./assets/fonts/BricolageGrotesque/BricolageGrotesque-VariableFont_opsz\wdth\wght.ttf")
+          format("truetype-variations");
+      }
+
+      body {
+        font-family: "Bricolage Grotesque", sans-serif;
+        font-optical-sizing: auto;
+        font-style: normal;
+        font-variation-settings: "wdth" 100;
+      }
+    </style>
+    <title>Mouse-power</title>
+  </head>
+
+  <body>
+    <mouse-power></mouse-power>
+
+    <script type="module" src="./out-tsc/src/mouse-power.js"></script>
+  </body>
+</html>
