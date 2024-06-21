@@ -19,8 +19,12 @@ export class MouseShop extends LitElement {
         </thead>
         <tbody>
           <tr>
-            <th scope="row">Chris</th>
-            <td><button class="btn-shop">Cost</button></td>
+            <th scope="row">Cursor</th>
+            <td>
+              <button class="btn-shop" .click=${() => this.addAutoCursor()}>
+                1$
+              </button>
+            </td>
           </tr>
           <tr>
             <th scope="row">Dennis</th>
@@ -44,6 +48,8 @@ export class MouseShop extends LitElement {
       </table>
     `;
   }
+
+  addAutoCursor(): void {}
 }
 
 declare global {

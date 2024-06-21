@@ -1,19 +1,18 @@
 import { LitElement, css, html } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
-import { GameScoreCounter } from "./classes/game-score-counter.js";
 import { Score } from "./models/score.type.js";
 
 import { MouseEventController } from "./controllers/mouse-event.controller.js";
+import { ScoreController } from "./controllers/score.controller.js";
 
 import "./score-increment.js";
 import "./mouse-usage.js";
 import "./mouse-shop.js";
-import { ScoreController } from "./controllers/score.controller.js";
+import "./auto-cursor.js";
 
 @customElement("mouse-power")
 export class MousePower extends LitElement {
-  @state() private scores: Record<string, Score> = {};
   private mouseEventManager = new MouseEventController(this);
   private scoreController = new ScoreController(this);
 
@@ -128,6 +127,13 @@ export class MousePower extends LitElement {
                   this.scoreController.removeScore(id, score.value)}
               />`
           )}
+        </div>
+
+        <div class="auto-cursor-container">
+          <auto-cursor
+            @add-score=${(x: number, y: number) =>
+              this.scoreController.addScore(x, y)}
+          ></auto-cursor>
         </div>
       </main>
     `;

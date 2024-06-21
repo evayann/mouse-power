@@ -43,5 +43,6 @@ export class ScoreController {
     const { [scoreId]: score, ...otherScore } = this.#scores;
     this.#scores = { ...otherScore };
     this.#gameScoreCounter.apply(scoreValue);
+    this.host.requestUpdate();
   }
 }
