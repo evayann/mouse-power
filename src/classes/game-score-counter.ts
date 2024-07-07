@@ -14,7 +14,7 @@ export class GameScoreCounter {
   }
 
   newScore(): number {
-    return this.#nbApply + 1;
+    return this.#nbApply / 1000 + 1;
   }
 
   apply(score: number): void {

@@ -1,20 +1,32 @@
-import { LitElement, css, html } from "lit";
-import { customElement, state } from "lit/decorators.js";
+import { LitElement, TemplateResult, css, html } from "lit";
+import { customElement } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
-import { Score } from "./models/score.type.js";
 
 import { MouseEventController } from "./controllers/mouse-event.controller.js";
 import { ScoreController } from "./controllers/score.controller.js";
+import { BonusController } from "./controllers/bonus.controller.js";
+import { ShopController } from "./controllers/shop.controller.js";
+import { Timing } from "./classes/timing.js";
 
-import "./score-increment.js";
-import "./mouse-usage.js";
-import "./mouse-shop.js";
+import { ItemName } from "./models/item.type.js";
+
 import "./auto-cursor.js";
+import "./mouse-shop.js";
+import "./mouse-usage.js";
+import "./score-increment.js";
 
 @customElement("mouse-power")
 export class MousePower extends LitElement {
   private mouseEventManager = new MouseEventController(this);
   private scoreController = new ScoreController(this);
+  private shopController = new ShopController(this);
+  private bonusController = new BonusController(this);
+
+  #startTime = new Date();
+  #resetMultiplicatorTimeInMs = 2000;
+  #movementDebounceTimeInMs = 50;
+  #targetMinimalFps = 30;
+  #targetMs = (1 / this.#targetMinimalFps) * 1000;
 
   static styles = css`
     :host {
@@ -37,6 +49,7 @@ export class MousePower extends LitElement {
 
     main {
       flex-grow: 2;
+      font-variant-numeric: tabular-nums;
     }
 
     .logo {
@@ -72,7 +85,16 @@ export class MousePower extends LitElement {
       bottom: 0;
       translate: 15% -15%;
     }
+
+    auto-cursor {
+      width: 40px;
+    }
   `;
+
+  private get timeFromStart(): string {
+    const now = new Date();
+    return `${((+now - +this.#startTime) / 1000).toFixed(2)}s`;
+  }
 
   constructor() {
     super();
@@ -80,6 +102,8 @@ export class MousePower extends LitElement {
     this.addEventListener("click", this.onMouseClick);
     this.addEventListener("contextmenu", this.onMouseContextMenu);
     this.addEventListener("mousemove", this.onMouseMove);
+
+    setInterval(() => this.requestUpdate(), this.#targetMs);
   }
 
   disconnectedCallback() {
@@ -90,7 +114,7 @@ export class MousePower extends LitElement {
     this.removeEventListener("mousemove", this.onMouseMove);
   }
 
-  render() {
+  render(): TemplateResult {
     return html`
       <header>
         <h1 class="logo">Mouse Power</h1>
@@ -99,6 +123,7 @@ export class MousePower extends LitElement {
       <main>
         <div class="statistics">
           <p>Score:${this.scoreController.value}</p>
+          <p>Timer:${this.timeFromStart}</p>
           <p>Multiplicator:${this.scoreController.multiplicator}</p>
         </div>
 
@@ -111,7 +136,12 @@ export class MousePower extends LitElement {
         </mouse-usage>
 
         <img class="mouse-eater" src="./assets/mouse-eater.svg" />
-        <mouse-shop> </mouse-shop>
+        <mouse-shop
+          .itemList=${this.shopController.itemList}
+          @buy=${({ detail }: CustomEvent<{ name: ItemName }>) =>
+            this.onBuy(detail.name)}
+        >
+        </mouse-shop>
 
         <div class="score-increment-container">
           ${repeat(
@@ -123,20 +153,38 @@ export class MousePower extends LitElement {
                 .fromPosition=${score.startPosition}
                 .toPosition=${{ x: 50, y: 50 }}
                 .displayTimeInMs=${score.displayTimeInMs}
-                @is-old=${() =>
-                  this.scoreController.removeScore(id, score.value)}
+                @is-old=${() => this.scoreController.removeScore(id)}
               />`
           )}
         </div>
 
         <div class="auto-cursor-container">
-          <auto-cursor
-            @add-score=${(x: number, y: number) =>
-              this.scoreController.addScore(x, y)}
-          ></auto-cursor>
+          ${repeat(
+            this.bonusController.autoCursorList,
+            (_, index) => index,
+            ({ speed }) => html`<auto-cursor
+              @add-score=${({
+                detail,
+              }: CustomEvent<{ x: number; y: number }>) => {
+                const { x, y } = detail;
+                this.scoreController.addScore(x, y);
+                this.requestUpdate();
+              }}
+            ></auto-cursor>`
+          )}
         </div>
       </main>
     `;
+  }
+
+  private onBuy(itemName: ItemName): void {
+    const itemActions: Record<ItemName, () => void> = {
+      "auto-cursor": () => this.bonusController.addNewAutoCursor(),
+      "auto-cursor-speed": () => {},
+    };
+    const nbActionToDo = this.shopController.buy(itemName);
+    const action = itemActions[itemName];
+    Array.from({ length: nbActionToDo }).forEach(action);
   }
 
   private onMouseScroll(): void {
@@ -144,30 +192,29 @@ export class MousePower extends LitElement {
   }
 
   private onMouseClick(): void {
+    this.scoreController.incrementMultiplicator();
+    this.resetMultiplicatorWhenDelayPassedAndNoMoreClick();
+
     this.mouseEventManager.leftClick();
   }
 
   private onMouseContextMenu(mouseEvent: MouseEvent): void {
     mouseEvent.preventDefault();
+
+    this.scoreController.incrementMultiplicator();
+    this.resetMultiplicatorWhenDelayPassedAndNoMoreClick();
+
     this.mouseEventManager.rightClick();
   }
 
-  private onMouseMove = this.debounce((mouseEvent: MouseEvent): void => {
+  private resetMultiplicatorWhenDelayPassedAndNoMoreClick =
+    Timing.delayAndCleanIfExist(() => {
+      this.scoreController.resetMultiplicator();
+      this.requestUpdate();
+    }, this.#resetMultiplicatorTimeInMs);
+
+  private onMouseMove = Timing.debounce((mouseEvent: MouseEvent): void => {
     this.scoreController.addScore(mouseEvent.clientX, mouseEvent.clientY);
     this.mouseEventManager.move();
-  }, 100);
-
-  private debounce(fct: Function, timeInMs: number) {
-    let timer: ReturnType<typeof setTimeout> | undefined;
-
-    return (...args: unknown[]) => {
-      if (timer) return;
-
-      timer = setTimeout(() => {
-        fct.apply(this, args);
-        clearTimeout(timer);
-        timer = undefined;
-      }, timeInMs);
-    };
-  }
+  }, this.#movementDebounceTimeInMs);
 }

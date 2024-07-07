@@ -1,4 +1,5 @@
 import { ReactiveControllerHost } from "lit";
+import { Timing } from "../classes/timing.js";
 
 export class MouseEventController {
   host: ReactiveControllerHost;
@@ -34,7 +35,7 @@ export class MouseEventController {
     this.stopMovement();
   }
 
-  private stopMovement = this.resetPropertyAfter(() => {
+  private stopMovement = Timing.delayAndCleanIfExist(() => {
     this.#isMoving = false;
     this.host.requestUpdate();
   }, this.#resetTimeInMs);
@@ -45,7 +46,7 @@ export class MouseEventController {
     this.stopScroll();
   }
 
-  private stopScroll = this.resetPropertyAfter(() => {
+  private stopScroll = Timing.delayAndCleanIfExist(() => {
     this.#isScroll = false;
     this.host.requestUpdate();
   }, this.#resetTimeInMs);
@@ -56,7 +57,7 @@ export class MouseEventController {
     this.stopLeftClick();
   }
 
-  private stopLeftClick = this.resetPropertyAfter(() => {
+  private stopLeftClick = Timing.delayAndCleanIfExist(() => {
     this.#isLeftClick = false;
     this.host.requestUpdate();
   }, this.#resetTimeInMs);
@@ -67,33 +68,8 @@ export class MouseEventController {
     this.stopRightClick();
   }
 
-  private stopRightClick = this.resetPropertyAfter(() => {
+  private stopRightClick = Timing.delayAndCleanIfExist(() => {
     this.#isRightClick = false;
     this.host.requestUpdate();
   }, this.#resetTimeInMs);
-
-  private resetPropertyAfter(resetFunction: () => void, timeInMs: number) {
-    let timer: ReturnType<typeof setTimeout> | undefined;
-
-    return (): void => {
-      if (timer) {
-        clearTimeout(timer);
-        timer = undefined;
-      }
-
-      timer = this.delay(resetFunction, timeInMs);
-    };
-  }
-
-  private delay(
-    fct: Function,
-    timeInMs: number
-  ): ReturnType<typeof setTimeout> {
-    const timer: ReturnType<typeof setTimeout> = setTimeout(() => {
-      fct();
-      clearTimeout(timer);
-    }, timeInMs);
-
-    return timer;
-  }
 }

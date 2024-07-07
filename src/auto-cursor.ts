@@ -3,14 +3,19 @@ import { customElement, query } from "lit/decorators.js";
 
 @customElement("auto-cursor")
 export class AutoCursor extends LitElement {
-  @query("auto-cursor") cursor: any;
+  @query(".cursor") cursor!: HTMLElement;
+
   static styles = css`
     :host {
+      --radius: 200px;
+      --one-rotation: 5s;
       position: absolute;
       top: 50%;
-      left: 20vw;
-      transform-origin: calc(50vw - 20vw);
-      animation: rotate-around-mouse var(--rotation-time, 5s) linear infinite;
+      left: calc(50% - var(--radius));
+      transform-origin: var(--radius);
+      animation: rotate-around-mouse var(--rotation-time, var(--one-rotation))
+        linear infinite;
+      will-change: transform;
     }
 
     @keyframes rotate-around-mouse {
@@ -22,29 +27,33 @@ export class AutoCursor extends LitElement {
       }
     }
 
-    p {
-      margin: 0;
-      animation: rotate-around-mouse var(--rotation-time, 5s) linear infinite
-        reverse;
+    .cursor {
+      width: 100%;
+      animation: rotate-around-mouse var(--rotation-time, var(--one-rotation))
+        linear infinite reverse;
     }
   `;
 
+  #createNewScoreIntervalInMs = 500;
+
   constructor() {
     super();
+
     setInterval(() => {
+      const { top, left, width, height } = this.cursor.getBoundingClientRect();
       this.dispatchEvent(
         new CustomEvent("add-score", {
           detail: {
-            x: Math.random() * 20,
-            y: Math.random() * 20,
+            x: Math.round(left + width / 2),
+            y: Math.round(top + height / 2),
           },
         })
       );
-    }, 500);
+    }, this.#createNewScoreIntervalInMs);
   }
 
   render() {
-    return html`<p>test</p>`;
+    return html`<img class="cursor" src="./assets/cursor.svg" />`;
   }
 }
 

@@ -4,7 +4,6 @@ import { GameScoreCounter } from "../classes/game-score-counter.js";
 
 export class ScoreController {
   private static SCORE_ID_COUNTER = 0;
-  host: ReactiveControllerHost;
 
   get value(): string {
     return this.#gameScoreCounter.value;
@@ -18,11 +17,23 @@ export class ScoreController {
     return Object.entries(this.#scores);
   }
 
+  #host: ReactiveControllerHost;
   #scores: Record<string, Score> = {};
   #gameScoreCounter = new GameScoreCounter();
+
   constructor(host: ReactiveControllerHost) {
-    this.host = host;
+    this.#host = host;
     host.addController(this as any);
+  }
+
+  incrementMultiplicator(): void {
+    this.#gameScoreCounter.incrementMultiplicator();
+    this.#host.requestUpdate();
+  }
+
+  resetMultiplicator(): void {
+    this.#gameScoreCounter.resetMultiplicator();
+    this.#host.requestUpdate();
   }
 
   addScore(x: number, y: number): void {
@@ -30,19 +41,20 @@ export class ScoreController {
       ...this.#scores,
       [ScoreController.SCORE_ID_COUNTER++]: {
         value: this.#gameScoreCounter.newScore(),
-        displayTimeInMs: 500 + Math.random() * 1000,
+        displayTimeInMs: Math.round(500 + Math.random() * 1000),
         startPosition: {
           x,
           y,
         },
       },
     };
+    this.#host.requestUpdate();
   }
 
-  removeScore(scoreId: string, scoreValue: number): void {
+  removeScore(scoreId: string): void {
     const { [scoreId]: score, ...otherScore } = this.#scores;
     this.#scores = { ...otherScore };
-    this.#gameScoreCounter.apply(scoreValue);
-    this.host.requestUpdate();
+    this.#gameScoreCounter.apply(score.value);
+    this.#host.requestUpdate();
   }
 }

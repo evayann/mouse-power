@@ -1,9 +1,20 @@
 import { LitElement, css, html } from "lit";
-import { customElement } from "lit/decorators.js";
+import { customElement, property } from "lit/decorators.js";
+
+import { ItemName, allItemNameList } from "./models/item.type.js";
 
 @customElement("mouse-shop")
 export class MouseShop extends LitElement {
+  @property({ type: Array }) itemList: {
+    name: ItemName;
+    cost: number | undefined;
+  }[] = [];
+
   static styles = css``;
+
+  get #allNextCost(): number {
+    return this.itemList.reduce((acc, { cost }) => acc + (cost ?? 0), 0);
+  }
 
   render() {
     return html`
@@ -18,38 +29,54 @@ export class MouseShop extends LitElement {
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <th scope="row">Cursor</th>
-            <td>
-              <button class="btn-shop" .click=${() => this.addAutoCursor()}>
-                1$
-              </button>
-            </td>
-          </tr>
-          <tr>
-            <th scope="row">Dennis</th>
-            <td><button class="btn-shop">Cost</button></td>
-          </tr>
-          <tr>
-            <th scope="row">Sarah</th>
-            <td><button class="btn-shop">Cost</button></td>
-          </tr>
-          <tr>
-            <th scope="row">Karen</th>
-            <td><button class="btn-shop">Cost</button></td>
-          </tr>
+          ${this.itemList.map(
+            ({ name, cost }) => html`<tr>
+              <th scope="row">${name}</th>
+              <td>
+                <button
+                  class="btn-shop"
+                  .disabled="${cost === undefined}"
+                  @click=${(event: Event) => {
+                    event.stopPropagation();
+                    this.buyItem(name);
+                  }}
+                >
+                  ${cost ? `$${cost}` : "No more upgrade"}
+                </button>
+              </td>
+            </tr>`
+          )}
         </tbody>
         <tfoot>
           <tr>
             <th scope="row">All</th>
-            <td><button class="btn-shop">Cost</button></td>
+            <td>
+              <button
+                class="btn-shop"
+                .disabled="${this.#allNextCost === 0}"
+                @click=${(event: Event) => {
+                  event.stopPropagation();
+                  this.buyAllItem();
+                }}
+              >
+                ${this.#allNextCost !== 0
+                  ? `$${this.#allNextCost}`
+                  : "No more upgrade"}
+              </button>
+            </td>
           </tr>
         </tfoot>
       </table>
     `;
   }
 
-  addAutoCursor(): void {}
+  private buyItem(itemName: ItemName): void {
+    this.dispatchEvent(new CustomEvent("buy", { detail: { name: itemName } }));
+  }
+
+  private buyAllItem(): void {
+    allItemNameList.forEach((itemName) => this.buyItem(itemName));
+  }
 }
 
 declare global {

@@ -23,6 +23,8 @@ export class ScoreIncrement extends LitElement {
     :host {
       position: absolute;
       animation: move-to-target var(--display-time) ease-in;
+      pointer-events: none;
+      will-change: transform;
     }
 
     @keyframes move-to-target {
@@ -31,9 +33,11 @@ export class ScoreIncrement extends LitElement {
         left: var(--from-left);
         opacity: 1;
       }
+
       85% {
         opacity: 1;
       }
+
       100% {
         top: var(--to-top);
         left: var(--to-left);
@@ -44,6 +48,10 @@ export class ScoreIncrement extends LitElement {
     p {
       translate: -50% -50%;
       margin: 0;
+
+      paint-order: stroke fill;
+      -webkit-text-stroke-width: 2px;
+      -webkit-text-stroke-color: #ededed;
     }
   `;
 
