@@ -5,6 +5,7 @@ import { ItemName, allItemNameList } from "./models/item.type.js";
 
 @customElement("mouse-shop")
 export class MouseShop extends LitElement {
+  @property({ type: Number }) currentMoney!: number;
   @property({ type: Array }) itemList: {
     name: ItemName;
     cost: number | undefined;
@@ -35,7 +36,7 @@ export class MouseShop extends LitElement {
               <td>
                 <button
                   class="btn-shop"
-                  .disabled="${cost === undefined}"
+                  .disabled="${cost === undefined || cost > this.currentMoney}"
                   @click=${(event: Event) => {
                     event.stopPropagation();
                     this.buyItem(name);
@@ -53,7 +54,8 @@ export class MouseShop extends LitElement {
             <td>
               <button
                 class="btn-shop"
-                .disabled="${this.#allNextCost === 0}"
+                .disabled="${this.#allNextCost === 0 ||
+                this.#allNextCost > this.currentMoney}"
                 @click=${(event: Event) => {
                   event.stopPropagation();
                   this.buyAllItem();

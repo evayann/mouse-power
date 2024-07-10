@@ -2,8 +2,8 @@ import { LitElement, TemplateResult, css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { Point } from "./models/point.type.js";
 
-@customElement("score-increment")
-export class ScoreIncrement extends LitElement {
+@customElement("money-created")
+export class MoneyCreated extends LitElement {
   @property({ type: Number }) value!: number;
   @property({ type: Number }) set displayTimeInMs(displayTimeInMs: number) {
     this.style.setProperty("--display-time", `${displayTimeInMs}ms`);
@@ -55,13 +55,34 @@ export class ScoreIncrement extends LitElement {
       }
     }
 
-    p {
+    div {
+      position: relative;
       translate: -50% -50%;
-      margin: 0;
 
-      paint-order: stroke fill;
+      background-color: green;
+      border: 1px solid lightgreen;
+
+      /* paint-order: stroke fill;
       -webkit-text-stroke-width: 2px;
-      -webkit-text-stroke-color: #ededed;
+      -webkit-text-stroke-color: #ededed; */
+
+      &::before {
+        content: "";
+        position: absolute;
+
+        height: 100%;
+        aspect-ratio: 1;
+        border-radius: 50%;
+        background-color: lightgreen;
+
+        left: 50%;
+        translate: -50% 0;
+      }
+    }
+
+    p {
+      position: relative;
+      margin: 0;
     }
   `;
 
@@ -76,7 +97,7 @@ export class ScoreIncrement extends LitElement {
   }
 
   render(): TemplateResult {
-    return html`<p>+${this.value}</p>`;
+    return html`<div><p>$${this.value}</p></div>`;
   }
 
   private onPointReachTartgetPosition(): void {
@@ -86,6 +107,6 @@ export class ScoreIncrement extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "score-increment": ScoreIncrement;
+    "money-created": MoneyCreated;
   }
 }

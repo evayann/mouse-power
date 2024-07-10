@@ -1,32 +1,41 @@
-export class GameScoreCounter {
-  #multiplicator = 1;
-  #score = 0;
+export class Bank {
+  #interset = 1;
+  #money = 0;
 
-  #nbApply = 0;
-  #displayPrecision = 2;
+  #nbMoneyCreated = 0;
 
-  get value(): string {
-    return this.#score.toFixed(this.#displayPrecision);
+  get sold(): number {
+    return this.#money;
   }
 
-  get multiplicator(): string {
-    return this.#multiplicator.toFixed(this.#displayPrecision);
+  get interest(): number {
+    return this.#interset;
   }
 
-  newScore(): number {
-    return this.#nbApply / 1000 + 1;
+  createMoney(): number {
+    return this.#nbMoneyCreated / 1000 + 1;
   }
 
-  apply(score: number): void {
-    this.#score += score * this.#multiplicator;
-    this.#nbApply++;
+  cashIn(money: number): void {
+    this.#money += money;
+    this.#nbMoneyCreated++;
   }
 
-  incrementMultiplicator(): void {
-    this.#multiplicator += 0.1;
+  cashInInterest(): void {
+    this.#money *= this.#interset;
   }
 
-  resetMultiplicator(): void {
-    this.#multiplicator = 1;
+  cashOut(money: number): void {
+    const newSold = this.#money - money;
+    if (newSold < 0) return;
+    this.#money = newSold;
+  }
+
+  incrementInterest(): void {
+    this.#interset += 0.1;
+  }
+
+  resetInterest(): void {
+    this.#interset = 1;
   }
 }

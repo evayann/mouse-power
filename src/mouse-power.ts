@@ -3,7 +3,7 @@ import { customElement } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
 
 import { MouseEventController } from "./controllers/mouse-event.controller.js";
-import { ScoreController } from "./controllers/score.controller.js";
+import { BankController } from "./controllers/money.controller.js";
 import { BonusController } from "./controllers/bonus.controller.js";
 import { ShopController } from "./controllers/shop.controller.js";
 import { Timing } from "./classes/timing.js";
@@ -14,12 +14,12 @@ import "./auto-cursor.js";
 import "./mouse-eater.js";
 import "./mouse-shop.js";
 import "./mouse-usage.js";
-import "./score-increment.js";
+import "./money-created.js";
 
 @customElement("mouse-power")
 export class MousePower extends LitElement {
   private mouseEventManager = new MouseEventController(this);
-  private scoreController = new ScoreController(this);
+  private bankController = new BankController(this);
   private shopController = new ShopController(this);
   private bonusController = new BonusController(this);
 
@@ -93,8 +93,8 @@ export class MousePower extends LitElement {
     }
   `;
 
-  get hasScore(): boolean {
-    return this.scoreController.scoreList.length > 0;
+  get hasMoneyCreated(): boolean {
+    return this.bankController.moneyPopUpList.length > 0;
   }
 
   private get timeFromStart(): string {
@@ -110,6 +110,10 @@ export class MousePower extends LitElement {
     this.addEventListener("mousemove", this.onMouseMove);
 
     setInterval(() => this.requestUpdate(), this.#targetMs);
+    setInterval(() => {
+      this.bankController.cashInInterest();
+      this.requestUpdate();
+    }, 1000);
   }
 
   disconnectedCallback() {
@@ -128,9 +132,9 @@ export class MousePower extends LitElement {
       </header>
       <main>
         <div class="statistics">
-          <p>Score:${this.scoreController.value}</p>
+          <p>Money:$${this.bankController.sold}</p>
           <p>Timer:${this.timeFromStart}</p>
-          <p>Multiplicator:${this.scoreController.multiplicator}</p>
+          <p>Interest:${this.bankController.interest}</p>
         </div>
 
         <mouse-usage
@@ -141,8 +145,9 @@ export class MousePower extends LitElement {
         >
         </mouse-usage>
 
-        <mouse-eater .isEating=${this.hasScore}></mouse-eater>
+        <mouse-eater .isEating=${this.hasMoneyCreated}></mouse-eater>
         <mouse-shop
+          .currentMoney=${this.bankController.sold}
           .itemList=${this.shopController.itemList}
           @buy=${({ detail }: CustomEvent<{ name: ItemName }>) =>
             this.onBuy(detail.name)}
@@ -151,15 +156,15 @@ export class MousePower extends LitElement {
 
         <div class="score-increment-container">
           ${repeat(
-            this.scoreController.scoreList,
-            ([id]) => id,
-            ([id, score]) =>
-              html`<score-increment
-                value=${score.value}
-                .fromPosition=${score.startPosition}
+            this.bankController.moneyPopUpList,
+            ({ id }) => id,
+            ({ id, moneyCreated }) =>
+              html`<money-created
+                value=${moneyCreated.value}
+                .fromPosition=${moneyCreated.startPosition}
                 .toPosition=${{ x: 50, y: 50 }}
-                .displayTimeInMs=${score.displayTimeInMs}
-                @is-old=${() => this.scoreController.removeScore(id)}
+                .displayTimeInMs=${moneyCreated.displayTimeInMs}
+                @is-old=${() => this.bankController.cashIn(id)}
               />`
           )}
         </div>
@@ -173,7 +178,7 @@ export class MousePower extends LitElement {
                 detail,
               }: CustomEvent<{ x: number; y: number }>) => {
                 const { x, y } = detail;
-                this.scoreController.addScore(x, y);
+                this.bankController.createMoney(x, y);
                 this.requestUpdate();
               }}
             ></auto-cursor>`
@@ -198,7 +203,7 @@ export class MousePower extends LitElement {
   }
 
   private onMouseClick(): void {
-    this.scoreController.incrementMultiplicator();
+    this.bankController.incrementInterest();
     this.resetMultiplicatorWhenDelayPassedAndNoMoreClick();
 
     this.mouseEventManager.leftClick();
@@ -207,7 +212,7 @@ export class MousePower extends LitElement {
   private onMouseContextMenu(mouseEvent: MouseEvent): void {
     mouseEvent.preventDefault();
 
-    this.scoreController.incrementMultiplicator();
+    this.bankController.incrementInterest();
     this.resetMultiplicatorWhenDelayPassedAndNoMoreClick();
 
     this.mouseEventManager.rightClick();
@@ -215,12 +220,12 @@ export class MousePower extends LitElement {
 
   private resetMultiplicatorWhenDelayPassedAndNoMoreClick =
     Timing.delayAndCleanIfExist(() => {
-      this.scoreController.resetMultiplicator();
+      this.bankController.resetInterest();
       this.requestUpdate();
     }, this.#resetMultiplicatorTimeInMs);
 
   private onMouseMove = Timing.debounce((mouseEvent: MouseEvent): void => {
-    this.scoreController.addScore(mouseEvent.clientX, mouseEvent.clientY);
+    this.bankController.createMoney(mouseEvent.clientX, mouseEvent.clientY);
     this.mouseEventManager.move();
   }, this.#movementDebounceTimeInMs);
 

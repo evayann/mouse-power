@@ -1,6 +1,6 @@
 import { Point } from "./point.type.js";
 
-export type Score = {
+export type MoneyCreated = {
   value: number;
   startPosition: Point;
   displayTimeInMs: number;
