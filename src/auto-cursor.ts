@@ -23,7 +23,7 @@ export class AutoCursor extends LitElement {
         rotate: 0deg;
       }
       100% {
-        rotate: 360deg;
+        rotate: -360deg;
       }
     }
 
