@@ -1,5 +1,6 @@
 import { LitElement, TemplateResult, css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
+import { classMap } from "lit/directives/class-map.js";
 
 @customElement("mouse-eater")
 export class MouseEater extends LitElement {
@@ -21,7 +22,8 @@ export class MouseEater extends LitElement {
       height: 100%;
       stroke-width: 0.35px;
       translate: 0 10%;
-
+      opacity: 1;
+      transition: opacity 0.3s cubic-bezier(0.785, 0.135, 0.15, 0.86);
       path {
         stroke-dasharray: 286;
         stroke-dashoffset: 0;
@@ -58,6 +60,10 @@ export class MouseEater extends LitElement {
       width: 50%;
       height: 50%;
     }
+
+    .hide {
+      opacity: 0;
+    }
   `;
 
   render(): TemplateResult {
@@ -71,6 +77,7 @@ export class MouseEater extends LitElement {
         stroke="#aaa"
         stroke="#000"
         viewBox="0 0 499 499"
+        class="${classMap({ hide: !this.isEating })}"
       >
         <defs>
           <radialGradient id="gradient">

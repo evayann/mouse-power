@@ -93,6 +93,10 @@ export class MousePower extends LitElement {
     }
   `;
 
+  get hasScore(): boolean {
+    return this.scoreController.scoreList.length > 0;
+  }
+
   private get timeFromStart(): string {
     const now = new Date();
     return this.timerFormat(+now - +this.#startTime);
@@ -137,7 +141,7 @@ export class MousePower extends LitElement {
         >
         </mouse-usage>
 
-        <mouse-eater></mouse-eater>
+        <mouse-eater .isEating=${this.hasScore}></mouse-eater>
         <mouse-shop
           .itemList=${this.shopController.itemList}
           @buy=${({ detail }: CustomEvent<{ name: ItemName }>) =>
