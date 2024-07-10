@@ -11,6 +11,7 @@ import { Timing } from "./classes/timing.js";
 import { ItemName } from "./models/item.type.js";
 
 import "./auto-cursor.js";
+import "./mouse-eater.js";
 import "./mouse-shop.js";
 import "./mouse-usage.js";
 import "./score-increment.js";
@@ -61,13 +62,14 @@ export class MousePower extends LitElement {
       justify-content: space-evenly;
     }
 
-    .mouse-eater {
+    mouse-eater {
       position: absolute;
       left: 50%;
       top: 50%;
       translate: -50% -50%;
 
-      width: 200px;
+      width: 400px;
+      aspect-ratio: 1;
     }
 
     mouse-usage {
@@ -93,7 +95,7 @@ export class MousePower extends LitElement {
 
   private get timeFromStart(): string {
     const now = new Date();
-    return `${((+now - +this.#startTime) / 1000).toFixed(2)}s`;
+    return this.timerFormat(+now - +this.#startTime);
   }
 
   constructor() {
@@ -135,7 +137,7 @@ export class MousePower extends LitElement {
         >
         </mouse-usage>
 
-        <img class="mouse-eater" src="./assets/mouse-eater.svg" />
+        <mouse-eater></mouse-eater>
         <mouse-shop
           .itemList=${this.shopController.itemList}
           @buy=${({ detail }: CustomEvent<{ name: ItemName }>) =>
@@ -217,4 +219,17 @@ export class MousePower extends LitElement {
     this.scoreController.addScore(mouseEvent.clientX, mouseEvent.clientY);
     this.mouseEventManager.move();
   }, this.#movementDebounceTimeInMs);
+
+  private timerFormat(timeInMs: number): string {
+    const timeInSeconds = Math.floor(timeInMs / 1000);
+    const hours = Math.floor(timeInSeconds / 3600);
+    const minutes = Math.floor((timeInSeconds % 3600) / 60);
+    const seconds = timeInSeconds % 60;
+
+    const formattedHours = hours.toString().padStart(2, "0");
+    const formattedMinutes = minutes.toString().padStart(2, "0");
+    const formattedSeconds = seconds.toString().padStart(2, "0");
+
+    return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+  }
 }

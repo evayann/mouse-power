@@ -32,6 +32,15 @@ export class ScoreIncrement extends LitElement {
         top: var(--from-top);
         left: var(--from-left);
         opacity: 1;
+        scale: 1;
+      }
+
+      15% {
+        scale: 1.3;
+      }
+
+      50% {
+        scale: 1;
       }
 
       85% {
@@ -42,6 +51,7 @@ export class ScoreIncrement extends LitElement {
         top: var(--to-top);
         left: var(--to-left);
         opacity: 0;
+        scale: 0;
       }
     }
 
