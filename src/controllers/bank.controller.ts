@@ -1,9 +1,9 @@
 import { ReactiveControllerHost } from "lit";
 import { MoneyCreated } from "../models/score.type.js";
-import { Bank } from "../classes/game-score-counter.js";
+import { Bank } from "../classes/bank.js";
 
 export class BankController {
-  private static SCORE_ID_COUNTER = 0;
+  private static COUNTER = 0;
 
   get sold(): number {
     return this.#bank.sold;
@@ -42,7 +42,7 @@ export class BankController {
   createMoney(x: number, y: number): void {
     this.#moneysCreated = {
       ...this.#moneysCreated,
-      [BankController.SCORE_ID_COUNTER++]: {
+      [BankController.COUNTER++]: {
         value: this.#bank.createMoney(),
         displayTimeInMs: Math.round(500 + Math.random() * 1000),
         startPosition: {
@@ -60,9 +60,9 @@ export class BankController {
   }
 
   cashIn(id: string): void {
-    const { [id]: score, ...otherScore } = this.#moneysCreated;
+    const { [id]: moneyCreated, ...otherScore } = this.#moneysCreated;
     this.#moneysCreated = { ...otherScore };
-    this.#bank.cashIn(score.value);
+    this.#bank.cashIn(moneyCreated.value.raw);
     this.#host.requestUpdate();
   }
 }

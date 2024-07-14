@@ -1,3 +1,5 @@
+import { NumberValue } from "./number-value.js";
+
 export class Bank {
   #interset = 1;
   #money = 0;
@@ -12,13 +14,13 @@ export class Bank {
     return this.#interset;
   }
 
-  createMoney(): number {
-    return this.#nbMoneyCreated / 1000 + 1;
+  createMoney(): NumberValue {
+    return new NumberValue(this.#nbMoneyCreated / 1000 + 1);
   }
 
   cashIn(money: number): void {
     this.#money += money;
-    this.#nbMoneyCreated++;
+    this.#nbMoneyCreated += 1_000_000;
   }
 
   cashInInterest(): void {

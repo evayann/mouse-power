@@ -4,7 +4,7 @@ import { Point } from "./models/point.type.js";
 
 @customElement("money-created")
 export class MoneyCreated extends LitElement {
-  @property({ type: Number }) value!: number;
+  @property({ type: String }) value!: string;
   @property({ type: Number }) set displayTimeInMs(displayTimeInMs: number) {
     this.style.setProperty("--display-time", `${displayTimeInMs}ms`);
   }
@@ -62,10 +62,6 @@ export class MoneyCreated extends LitElement {
       background-color: green;
       border: 1px solid lightgreen;
 
-      /* paint-order: stroke fill;
-      -webkit-text-stroke-width: 2px;
-      -webkit-text-stroke-color: #ededed; */
-
       &::before {
         content: "";
         position: absolute;
@@ -83,6 +79,8 @@ export class MoneyCreated extends LitElement {
     p {
       position: relative;
       margin: 0;
+      font-size: 10px;
+      margin: 10px 20px;
     }
   `;
 

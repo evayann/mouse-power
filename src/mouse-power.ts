@@ -3,7 +3,7 @@ import { customElement } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
 
 import { MouseEventController } from "./controllers/mouse-event.controller.js";
-import { BankController } from "./controllers/money.controller.js";
+import { BankController } from "./controllers/bank.controller.js";
 import { BonusController } from "./controllers/bonus.controller.js";
 import { ShopController } from "./controllers/shop.controller.js";
 import { Timing } from "./classes/timing.js";
@@ -15,6 +15,7 @@ import "./mouse-eater.js";
 import "./mouse-shop.js";
 import "./mouse-usage.js";
 import "./money-created.js";
+import { NumberValue } from "./classes/number-value.js";
 
 @customElement("mouse-power")
 export class MousePower extends LitElement {
@@ -154,13 +155,19 @@ export class MousePower extends LitElement {
         >
         </mouse-shop>
 
+        <money-created
+          value=${new NumberValue(1e93).display}
+          .fromPosition=${{ x: 500, y: 500 }}
+          .toPosition=${{ x: 50, y: 50 }}
+          .displayTimeInMs=${100}
+        ></money-created>
         <div class="score-increment-container">
           ${repeat(
             this.bankController.moneyPopUpList,
             ({ id }) => id,
             ({ id, moneyCreated }) =>
               html`<money-created
-                value=${moneyCreated.value}
+                value=${moneyCreated.value.display}
                 .fromPosition=${moneyCreated.startPosition}
                 .toPosition=${{ x: 50, y: 50 }}
                 .displayTimeInMs=${moneyCreated.displayTimeInMs}
