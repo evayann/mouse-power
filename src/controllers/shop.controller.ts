@@ -1,6 +1,7 @@
 import { ReactiveControllerHost } from "lit";
 import { ShopItem } from "../classes/item.js";
 import { Item, ItemName } from "../models/item.type.js";
+import { NumberValue } from "../classes/number-value.js";
 
 export class ShopController {
   #items: Record<ItemName, Item> = {
@@ -15,7 +16,7 @@ export class ShopController {
   #onKeyDownListener = (event: KeyboardEvent) => this.#onKeyDown(event);
   #onKeyUpListener = (event: KeyboardEvent) => this.#onKeyUp(event);
 
-  get itemList(): { name: ItemName; cost: number | undefined }[] {
+  get itemList(): { name: ItemName; cost: NumberValue | undefined }[] {
     return Object.entries(this.#items).map(([name, item]) => ({
       name: name as ItemName,
       cost: this.#shiftModifier
@@ -50,7 +51,7 @@ export class ShopController {
     return this.#shiftModifier ? this.#nbItemIfModifier : 1;
   }
 
-  nextCostOf(itemName: ItemName): number | undefined {
+  nextCostOf(itemName: ItemName): NumberValue | undefined {
     const item = this.#items[itemName];
 
     return this.#shiftModifier

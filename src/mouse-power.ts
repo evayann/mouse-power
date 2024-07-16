@@ -14,8 +14,8 @@ import "./auto-cursor.js";
 import "./mouse-eater.js";
 import "./mouse-shop.js";
 import "./mouse-usage.js";
+import "./mouse-menu.js";
 import "./money-created.js";
-import { NumberValue } from "./classes/number-value.js";
 
 @customElement("mouse-power")
 export class MousePower extends LitElement {
@@ -29,6 +29,7 @@ export class MousePower extends LitElement {
   #movementDebounceTimeInMs = 50;
   #targetMinimalFps = 30;
   #targetMs = (1 / this.#targetMinimalFps) * 1000;
+  #isMenuOpen = false;
 
   static styles = css`
     :host {
@@ -130,13 +131,18 @@ export class MousePower extends LitElement {
       <header>
         <h1 class="logo">Mouse Power</h1>
         <p>By Yann Zavattero</p>
+        <button @click=${() => (this.#isMenuOpen = !this.#isMenuOpen)}>
+          Menu
+        </button>
       </header>
       <main>
         <div class="statistics">
-          <p>Money:$${this.bankController.sold}</p>
+          <p>Money:$${this.bankController.sold.display}</p>
           <p>Timer:${this.timeFromStart}</p>
-          <p>Interest:${this.bankController.interest}</p>
+          <p>Interest:${this.bankController.interest.display}</p>
         </div>
+
+        <mouse-menu .isOpen=${this.#isMenuOpen}></mouse-menu>
 
         <mouse-usage
           .isScroll=${this.mouseEventManager.isScroll}
@@ -155,12 +161,6 @@ export class MousePower extends LitElement {
         >
         </mouse-shop>
 
-        <money-created
-          value=${new NumberValue(1e93).display}
-          .fromPosition=${{ x: 500, y: 500 }}
-          .toPosition=${{ x: 50, y: 50 }}
-          .displayTimeInMs=${100}
-        ></money-created>
         <div class="score-increment-container">
           ${repeat(
             this.bankController.moneyPopUpList,

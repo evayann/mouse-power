@@ -1,16 +1,17 @@
 import { ReactiveControllerHost } from "lit";
 import { MoneyCreated } from "../models/score.type.js";
 import { Bank } from "../classes/bank.js";
+import { NumberValue } from "../classes/number-value.js";
 
 export class BankController {
   private static COUNTER = 0;
 
-  get sold(): number {
-    return this.#bank.sold;
+  get sold(): NumberValue {
+    return new NumberValue(this.#bank.sold);
   }
 
-  get interest(): number {
-    return this.#bank.interest;
+  get interest(): NumberValue {
+    return new NumberValue(this.#bank.interest, 2);
   }
 
   get moneyPopUpList(): { id: string; moneyCreated: MoneyCreated }[] {

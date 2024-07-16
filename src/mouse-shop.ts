@@ -2,19 +2,23 @@ import { LitElement, css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
 import { ItemName, allItemNameList } from "./models/item.type.js";
+import { NumberValue } from "./classes/number-value.js";
 
 @customElement("mouse-shop")
 export class MouseShop extends LitElement {
-  @property({ type: Number }) currentMoney!: number;
+  @property({ type: Object }) currentMoney!: NumberValue;
   @property({ type: Array }) itemList: {
     name: ItemName;
-    cost: number | undefined;
+    cost: NumberValue | undefined;
   }[] = [];
 
   static styles = css``;
 
-  get #allNextCost(): number {
-    return this.itemList.reduce((acc, { cost }) => acc + (cost ?? 0), 0);
+  get #allNextCost(): NumberValue {
+    return this.itemList.reduce(
+      (acc, { cost }) => acc.add(cost ?? 0),
+      new NumberValue(0)
+    );
   }
 
   render() {
@@ -36,13 +40,14 @@ export class MouseShop extends LitElement {
               <td>
                 <button
                   class="btn-shop"
-                  .disabled="${cost === undefined || cost > this.currentMoney}"
+                  .disabled="${cost === undefined ||
+                  this.currentMoney.isLowerThan(cost)}"
                   @click=${(event: Event) => {
                     event.stopPropagation();
                     this.buyItem(name);
                   }}
                 >
-                  ${cost ? `$${cost}` : "No more upgrade"}
+                  ${cost ? `$${cost.display}` : "No more upgrade"}
                 </button>
               </td>
             </tr>`
@@ -54,16 +59,17 @@ export class MouseShop extends LitElement {
             <td>
               <button
                 class="btn-shop"
-                .disabled="${this.#allNextCost === 0 ||
-                this.#allNextCost > this.currentMoney}"
+                .disabled="${this.#allNextCost.isZero ||
+                this.currentMoney.isLowerThan(this.#allNextCost)}"
+                this.#allNextCost
                 @click=${(event: Event) => {
                   event.stopPropagation();
                   this.buyAllItem();
                 }}
               >
-                ${this.#allNextCost !== 0
-                  ? `$${this.#allNextCost}`
-                  : "No more upgrade"}
+                ${this.#allNextCost.isZero
+                  ? "No more upgrade"
+                  : `$${this.#allNextCost.display}`}
               </button>
             </td>
           </tr>

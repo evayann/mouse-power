@@ -1,4 +1,4 @@
-import { LitElement, css, html } from "lit";
+import { LitElement, TemplateResult, css, html } from "lit";
 import { customElement, query } from "lit/decorators.js";
 
 @customElement("auto-cursor")
@@ -35,11 +35,12 @@ export class AutoCursor extends LitElement {
   `;
 
   #createNewScoreIntervalInMs = 500;
+  #timerReference: ReturnType<typeof setInterval>;
 
   constructor() {
     super();
 
-    setInterval(() => {
+    this.#timerReference = setInterval(() => {
       const { top, left, width, height } = this.cursor.getBoundingClientRect();
       this.dispatchEvent(
         new CustomEvent("add-score", {
@@ -52,7 +53,12 @@ export class AutoCursor extends LitElement {
     }, this.#createNewScoreIntervalInMs);
   }
 
-  render() {
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    clearInterval(this.#timerReference);
+  }
+
+  render(): TemplateResult {
     return html`<img class="cursor" src="./assets/cursor.svg" />`;
   }
 }
