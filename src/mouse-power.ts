@@ -16,6 +16,9 @@ import "./mouse-shop.js";
 import "./mouse-usage.js";
 import "./mouse-menu.js";
 import "./money-created.js";
+import { NumberValue } from "./classes/number-value.js";
+import { Notation } from "./models/notation.type.js";
+import { Theme } from "./models/theme.type.js";
 
 @customElement("mouse-power")
 export class MousePower extends LitElement {
@@ -30,6 +33,8 @@ export class MousePower extends LitElement {
   #targetMinimalFps = 30;
   #targetMs = (1 / this.#targetMinimalFps) * 1000;
   #isMenuOpen = false;
+  #updateTimeout: ReturnType<typeof setTimeout>;
+  #interestTimeout: ReturnType<typeof setTimeout>;
 
   static styles = css`
     :host {
@@ -111,11 +116,16 @@ export class MousePower extends LitElement {
     this.addEventListener("contextmenu", this.onMouseContextMenu);
     this.addEventListener("mousemove", this.onMouseMove);
 
-    setInterval(() => this.requestUpdate(), this.#targetMs);
-    setInterval(() => {
+    this.#updateTimeout = setInterval(
+      () => this.requestUpdate(),
+      this.#targetMs
+    );
+    this.#interestTimeout = setInterval(() => {
       this.bankController.cashInInterest();
       this.requestUpdate();
     }, 1000);
+
+    this.onChangeTheme((localStorage.getItem("theme") as Theme) ?? "light");
   }
 
   disconnectedCallback() {
@@ -124,13 +134,15 @@ export class MousePower extends LitElement {
     this.removeEventListener("click", this.onMouseClick);
     this.removeEventListener("contextmenu", this.onMouseContextMenu);
     this.removeEventListener("mousemove", this.onMouseMove);
+
+    clearInterval(this.#updateTimeout);
+    clearInterval(this.#interestTimeout);
   }
 
   render(): TemplateResult {
     return html`
       <header>
         <h1 class="logo">Mouse Power</h1>
-        <p>By Yann Zavattero</p>
         <button @click=${() => (this.#isMenuOpen = !this.#isMenuOpen)}>
           Menu
         </button>
@@ -142,7 +154,13 @@ export class MousePower extends LitElement {
           <p>Interest:${this.bankController.interest.display}</p>
         </div>
 
-        <mouse-menu .isOpen=${this.#isMenuOpen}></mouse-menu>
+        <mouse-menu
+          .isOpen=${this.#isMenuOpen}
+          @notation=${({ detail }: CustomEvent<{ notation: Notation }>) =>
+            this.onChangeNotation(detail.notation)}
+          @theme=${({ detail }: CustomEvent<{ theme: "dark" | "light" }>) =>
+            this.onChangeTheme(detail.theme)}
+        ></mouse-menu>
 
         <mouse-usage
           .isScroll=${this.mouseEventManager.isScroll}
@@ -193,6 +211,18 @@ export class MousePower extends LitElement {
         </div>
       </main>
     `;
+  }
+
+  private onChangeNotation(notation: Notation): void {
+    NumberValue.PRECISION_TYPE = notation;
+    localStorage.setItem("notation", notation);
+    this.requestUpdate();
+  }
+
+  private onChangeTheme(theme: Theme): void {
+    document.documentElement.setAttribute("theme", theme);
+    localStorage.setItem("theme", theme);
+    this.requestUpdate();
   }
 
   private onBuy(itemName: ItemName): void {

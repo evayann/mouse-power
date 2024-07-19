@@ -1,5 +1,7 @@
+import { Notation } from "../models/notation.type.js";
+
 export class NumberValue {
-  private static readonly PRECISION_TYPE: "scientific" | "natural" = "natural";
+  static PRECISION_TYPE: Notation = "natural";
   private static readonly ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".toLowerCase();
   private static readonly LARGE_KNOW_PREFIX = "KMBT";
 
