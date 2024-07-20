@@ -11,7 +11,10 @@ export class BankController {
   }
 
   get interest(): NumberValue {
-    return new NumberValue(this.#bank.interest, 2);
+    return new NumberValue(this.#bank.interestRatio * 100, {
+      notation: "percentage",
+      precision: 2,
+    });
   }
 
   get moneyPopUpList(): { id: string; moneyCreated: MoneyCreated }[] {

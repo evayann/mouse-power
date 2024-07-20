@@ -1,7 +1,7 @@
 import { NumberValue } from "./number-value.js";
 
 export class Bank {
-  #interset = 1;
+  #intersetRatio = 0;
   #money = 0;
 
   #nbMoneyCreated = 0;
@@ -10,8 +10,12 @@ export class Bank {
     return this.#money;
   }
 
-  get interest(): number {
-    return this.#interset;
+  get interestRatio(): number {
+    return this.#intersetRatio;
+  }
+
+  private get interestPercent(): number {
+    return this.#intersetRatio / 100;
   }
 
   createMoney(): NumberValue {
@@ -24,7 +28,7 @@ export class Bank {
   }
 
   cashInInterest(): void {
-    this.#money *= this.#interset;
+    this.#money += this.#money * this.interestPercent;
   }
 
   cashOut(money: number): void {
@@ -34,10 +38,10 @@ export class Bank {
   }
 
   incrementInterest(): void {
-    this.#interset += 0.1;
+    this.#intersetRatio += 0.0001;
   }
 
   resetInterest(): void {
-    this.#interset = 1;
+    this.#intersetRatio = 0;
   }
 }

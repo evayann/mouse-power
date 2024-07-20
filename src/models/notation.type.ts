@@ -1,1 +1,1 @@
-export type Notation = "scientific" | "natural";
+export type Notation = "scientific" | "natural" | "percentage";

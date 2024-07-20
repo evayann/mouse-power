@@ -1,14 +1,18 @@
 import { Notation } from "../models/notation.type.js";
 
 export class NumberValue {
-  static PRECISION_TYPE: Notation = "natural";
+  static DEFAULT_PRECISION_TYPE: Notation = "natural";
   private static readonly ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".toLowerCase();
   private static readonly LARGE_KNOW_PREFIX = "KMBT";
 
+  private displaysByNotation: Record<Notation, () => string> = {
+    natural: () => this.displayNatural,
+    scientific: () => this.displayExponential,
+    percentage: () => this.displayPercentage,
+  };
+
   get display(): string {
-    return NumberValue.PRECISION_TYPE === "scientific"
-      ? this.displayExponential
-      : this.displayNatural;
+    return this.displaysByNotation[this.notation]();
   }
 
   get raw(): number {
@@ -27,7 +31,16 @@ export class NumberValue {
     return this.raw === 0;
   }
 
+  private get notation(): Notation {
+    return this.options?.notation ?? NumberValue.DEFAULT_PRECISION_TYPE;
+  }
+
+  private get precision(): number {
+    return this.options?.precision ?? 1;
+  }
+
   private get displayExponential(): string {
+    if (this.value < 1e3) return this.value.toFixed(1);
     return this.value.toExponential(this.precision);
   }
 
@@ -35,11 +48,19 @@ export class NumberValue {
     return this.toShort(this.value);
   }
 
-  constructor(private value: number, private precision = 0) {}
+  private get displayPercentage(): string {
+    return `${this.value.toFixed(this.precision)}%`;
+  }
+
+  constructor(
+    private value: number,
+    private options?: { notation?: Notation; precision?: number }
+  ) {}
 
   add(toAdd: NumberValue | number): NumberValue {
     return new NumberValue(
-      this.raw + (typeof toAdd === "number" ? toAdd : toAdd.raw)
+      this.raw + (typeof toAdd === "number" ? toAdd : toAdd.raw),
+      this.options
     );
   }
 

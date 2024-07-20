@@ -126,6 +126,9 @@ export class MousePower extends LitElement {
     }, 1000);
 
     this.onChangeTheme((localStorage.getItem("theme") as Theme) ?? "light");
+    this.onChangeNotation(
+      (localStorage.getItem("notation") as Notation) ?? "natural"
+    );
   }
 
   disconnectedCallback() {
@@ -214,7 +217,7 @@ export class MousePower extends LitElement {
   }
 
   private onChangeNotation(notation: Notation): void {
-    NumberValue.PRECISION_TYPE = notation;
+    NumberValue.DEFAULT_PRECISION_TYPE = notation;
     localStorage.setItem("notation", notation);
     this.requestUpdate();
   }
