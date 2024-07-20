@@ -29,7 +29,7 @@ export class MousePower extends LitElement {
 
   #startTime = new Date();
   #resetMultiplicatorTimeInMs = 2000;
-  #movementDebounceTimeInMs = 50;
+  #movementDebounceTimeInMs = 100;
   #targetMinimalFps = 30;
   #targetMs = (1 / this.#targetMinimalFps) * 1000;
   #isMenuOpen = false;

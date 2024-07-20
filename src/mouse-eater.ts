@@ -12,6 +12,8 @@ export class MouseEater extends LitElement {
       align-items: center;
       justify-items: center;
 
+      --apparition-timing: cubic-bezier(0.74, -0.83, 0.51, 1.34);
+
       > * {
         grid-area: 1 / 1;
       }
@@ -23,7 +25,7 @@ export class MouseEater extends LitElement {
       stroke-width: 0.35px;
       translate: 0 10%;
       opacity: 1;
-      transition: opacity 0.3s cubic-bezier(0.785, 0.135, 0.15, 0.86);
+      transition: opacity 0.3s var(--apparition-timing);
       path {
         stroke-dasharray: 286;
         stroke-dashoffset: 0;
@@ -59,16 +61,24 @@ export class MouseEater extends LitElement {
     img {
       width: 50%;
       height: 50%;
+      transition: scale 0.4s var(--apparition-timing);
     }
 
     .hide {
       opacity: 0;
     }
+
+    .grow {
+      scale: 1.2;
+    }
   `;
 
   render(): TemplateResult {
     return html`
-      <img class="mouse-eater" src="./assets/mouse-eater.svg" />
+      <img
+        class="mouse-eater ${classMap({ grow: this.isEating })}"
+        src="./assets/mouse-eater.svg"
+      />
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="499"

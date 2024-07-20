@@ -19,12 +19,11 @@ export class Bank {
   }
 
   createMoney(): NumberValue {
-    return new NumberValue(this.#nbMoneyCreated / 1000 + 1);
+    return new NumberValue(Math.log(this.#nbMoneyCreated + 1) + 1);
   }
 
   cashIn(money: number): void {
     this.#money += money;
-    this.#nbMoneyCreated += 1_000_000;
   }
 
   cashInInterest(): void {
