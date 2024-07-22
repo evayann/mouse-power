@@ -2,9 +2,9 @@ import { ReactiveControllerHost } from "lit";
 
 export class BonusController {
   #host: ReactiveControllerHost;
-  #autoCursorList: { speed: number }[] = [];
+  #autoCursorList: { level: number }[] = [];
 
-  get autoCursorList(): readonly { speed: number }[] {
+  get autoCursorList(): readonly { level: number }[] {
     return this.#autoCursorList;
   }
 
@@ -14,7 +14,7 @@ export class BonusController {
   }
 
   addNewAutoCursor(): void {
-    this.#autoCursorList.push({ speed: 2 });
+    this.#autoCursorList = [...this.#autoCursorList, { level: 1 }];
     this.#host.requestUpdate();
   }
 }

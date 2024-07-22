@@ -2,6 +2,7 @@ import { ReactiveControllerHost } from "lit";
 import { MoneyCreated } from "../models/score.type.js";
 import { Bank } from "../classes/bank.js";
 import { NumberValue } from "../classes/number-value.js";
+import { StatisticsController } from "./statistics.controller.js";
 
 export class BankController {
   private static COUNTER = 0;
@@ -28,7 +29,10 @@ export class BankController {
   #moneysCreated: Record<string, MoneyCreated> = {};
   #bank = new Bank();
 
-  constructor(host: ReactiveControllerHost) {
+  constructor(
+    host: ReactiveControllerHost,
+    private statisticsController: StatisticsController
+  ) {
     this.#host = host;
     host.addController(this as any);
   }
@@ -59,14 +63,17 @@ export class BankController {
   }
 
   cashInInterest(): void {
-    this.#bank.cashInInterest();
+    const interest = this.#bank.cashInInterest();
+    this.statisticsController.addInterestCash(interest);
     this.#host.requestUpdate();
   }
 
   cashIn(id: string): void {
     const { [id]: moneyCreated, ...otherScore } = this.#moneysCreated;
+    const moneyGain = moneyCreated.value.raw;
     this.#moneysCreated = { ...otherScore };
-    this.#bank.cashIn(moneyCreated.value.raw);
+    this.#bank.cashIn(moneyGain);
+    this.statisticsController.addCashIn(moneyGain);
     this.#host.requestUpdate();
   }
 }

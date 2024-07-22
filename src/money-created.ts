@@ -6,18 +6,25 @@ import { Point } from "./models/point.type.js";
 export class MoneyCreated extends LitElement {
   @property({ type: String }) value!: string;
   @property({ type: Number }) set displayTimeInMs(displayTimeInMs: number) {
+    this.#displayTimeInMs = displayTimeInMs;
     this.style.setProperty("--display-time", `${displayTimeInMs}ms`);
   }
 
   @property({ type: Object }) set fromPosition(fromPosition: Point) {
+    this.#fromPosition = fromPosition;
     this.style.setProperty("--from-top", `${fromPosition.y}px`);
     this.style.setProperty("--from-left", `${fromPosition.x}px`);
   }
 
   @property({ type: Object }) set toPosition(toPosition: Point) {
+    this.#toPosition = toPosition;
     this.style.setProperty("--to-top", `${toPosition.y}%`);
     this.style.setProperty("--to-left", `${toPosition.x}%`);
   }
+
+  #displayTimeInMs!: number;
+  #fromPosition!: Point;
+  #toPosition!: Point;
 
   static styles = css`
     :host {
@@ -83,6 +90,18 @@ export class MoneyCreated extends LitElement {
       margin: 10px 20px;
     }
   `;
+
+  get displayTimeInMs(): number {
+    return this.#displayTimeInMs;
+  }
+
+  get fromPosition(): Point {
+    return this.#fromPosition;
+  }
+
+  get toPosition(): Point {
+    return this.#toPosition;
+  }
 
   constructor() {
     super();

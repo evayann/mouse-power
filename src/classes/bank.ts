@@ -26,8 +26,10 @@ export class Bank {
     this.#money += money;
   }
 
-  cashInInterest(): void {
-    this.#money += this.#money * this.interestPercent;
+  cashInInterest(): number {
+    const interest = this.#money * this.interestPercent;
+    this.#money += interest;
+    return interest;
   }
 
   cashOut(money: number): void {

@@ -2,32 +2,32 @@ import { LitElement, TemplateResult, css, html } from "lit";
 import { customElement } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
 
-import { MouseEventController } from "./controllers/mouse-event.controller.js";
-import { BankController } from "./controllers/bank.controller.js";
-import { BonusController } from "./controllers/bonus.controller.js";
-import { ShopController } from "./controllers/shop.controller.js";
-import { Timing } from "./classes/timing.js";
+import {
+  BankController,
+  MouseEventController,
+  ShopController,
+  BonusController,
+  StatisticsController,
+} from "./controllers/index.js";
 
-import { ItemName } from "./models/item.type.js";
+import { Timing, NumberValue } from "./classes/index.js";
+import { ItemName, Notation, Theme } from "./models/index.js";
 
-import "./auto-cursor.js";
+import "./auto-cursor-manager.js";
 import "./mouse-eater.js";
 import "./mouse-shop.js";
 import "./mouse-usage.js";
 import "./mouse-menu.js";
 import "./money-created.js";
-import { NumberValue } from "./classes/number-value.js";
-import { Notation } from "./models/notation.type.js";
-import { Theme } from "./models/theme.type.js";
 
 @customElement("mouse-power")
 export class MousePower extends LitElement {
-  private mouseEventManager = new MouseEventController(this);
-  private bankController = new BankController(this);
+  private statisticsController = new StatisticsController(this);
+  private mouseEventController = new MouseEventController(this);
+  private bankController = new BankController(this, this.statisticsController);
   private shopController = new ShopController(this);
   private bonusController = new BonusController(this);
 
-  #startTime = new Date();
   #resetMultiplicatorTimeInMs = 2000;
   #movementDebounceTimeInMs = 100;
   #targetMinimalFps = 30;
@@ -52,7 +52,11 @@ export class MousePower extends LitElement {
       justify-content: space-between;
       align-items: center;
 
-      padding-inline: 80px;
+      --padding-inline: 80px;
+      padding-inline: var(--padding-inline);
+      @media (width < 500px) {
+        --padding-inline: 20px;
+      }
     }
 
     main {
@@ -64,7 +68,7 @@ export class MousePower extends LitElement {
       display: flex;
     }
 
-    .statistics {
+    .status {
       display: flex;
       justify-content: space-evenly;
     }
@@ -75,8 +79,13 @@ export class MousePower extends LitElement {
       top: 50%;
       translate: -50% -50%;
 
-      width: 400px;
+      --width: 400px;
+      width: var(--width);
       aspect-ratio: 1;
+
+      @media (height < 500px) {
+        --width: 200px;
+      }
     }
 
     mouse-usage {
@@ -86,6 +95,10 @@ export class MousePower extends LitElement {
       right: 0;
       bottom: 0;
       translate: -15% -15%;
+
+      @media (width < 500px) {
+        translate: -5% -5%;
+      }
     }
 
     mouse-shop {
@@ -93,20 +106,19 @@ export class MousePower extends LitElement {
       left: 0;
       bottom: 0;
       translate: 15% -15%;
+
+      @media (width < 500px) {
+        translate: 5% -5%;
+      }
     }
 
-    auto-cursor {
+    auto-cursor-manager {
       width: 40px;
     }
   `;
 
   get hasMoneyCreated(): boolean {
     return this.bankController.moneyPopUpList.length > 0;
-  }
-
-  private get timeFromStart(): string {
-    const now = new Date();
-    return this.timerFormat(+now - +this.#startTime);
   }
 
   constructor() {
@@ -120,6 +132,7 @@ export class MousePower extends LitElement {
       () => this.requestUpdate(),
       this.#targetMs
     );
+
     this.#interestTimeout = setInterval(() => {
       this.bankController.cashInInterest();
       this.requestUpdate();
@@ -151,25 +164,29 @@ export class MousePower extends LitElement {
         </button>
       </header>
       <main>
-        <div class="statistics">
+        <div class="status">
           <p>Money:$${this.bankController.sold.display}</p>
-          <p>Timer:${this.timeFromStart}</p>
+          <p>Timer:${this.statisticsController.playTime}</p>
           <p>Interest:${this.bankController.interest.display}</p>
         </div>
 
         <mouse-menu
           .isOpen=${this.#isMenuOpen}
+          .cashGain=${this.statisticsController.totalMoneyGain}
+          .interestGain=${this.statisticsController.totalInterestGain}
+          .playTime=${this.statisticsController.playTime}
           @notation=${({ detail }: CustomEvent<{ notation: Notation }>) =>
             this.onChangeNotation(detail.notation)}
-          @theme=${({ detail }: CustomEvent<{ theme: "dark" | "light" }>) =>
+          @theme=${({ detail }: CustomEvent<{ theme: Theme }>) =>
             this.onChangeTheme(detail.theme)}
+          @close=${() => (this.#isMenuOpen = false)}
         ></mouse-menu>
 
         <mouse-usage
-          .isScroll=${this.mouseEventManager.isScroll}
-          .isMoving=${this.mouseEventManager.isMoving}
-          .isLeftClick=${this.mouseEventManager.isLeftClick}
-          .isRightClick=${this.mouseEventManager.isRightClick}
+          .isScroll=${this.mouseEventController.isScroll}
+          .isMoving=${this.mouseEventController.isMoving}
+          .isLeftClick=${this.mouseEventController.isLeftClick}
+          .isRightClick=${this.mouseEventController.isRightClick}
         >
         </mouse-usage>
 
@@ -196,22 +213,14 @@ export class MousePower extends LitElement {
               />`
           )}
         </div>
-
-        <div class="auto-cursor-container">
-          ${repeat(
-            this.bonusController.autoCursorList,
-            (_, index) => index,
-            ({ speed }) => html`<auto-cursor
-              @add-score=${({
-                detail,
-              }: CustomEvent<{ x: number; y: number }>) => {
-                const { x, y } = detail;
-                this.bankController.createMoney(x, y);
-                this.requestUpdate();
-              }}
-            ></auto-cursor>`
-          )}
-        </div>
+        <auto-cursor-manager
+          .autoCursorList=${this.bonusController.autoCursorList}
+          @add-score=${({ detail }: CustomEvent<{ x: number; y: number }>) => {
+            const { x, y } = detail;
+            this.bankController.createMoney(x, y);
+            this.requestUpdate();
+          }}
+        ></auto-cursor-manager>
       </main>
     `;
   }
@@ -239,14 +248,14 @@ export class MousePower extends LitElement {
   }
 
   private onMouseScroll(): void {
-    this.mouseEventManager.scroll();
+    this.mouseEventController.scroll();
   }
 
   private onMouseClick(): void {
     this.bankController.incrementInterest();
     this.resetMultiplicatorWhenDelayPassedAndNoMoreClick();
 
-    this.mouseEventManager.leftClick();
+    this.mouseEventController.leftClick();
   }
 
   private onMouseContextMenu(mouseEvent: MouseEvent): void {
@@ -255,7 +264,7 @@ export class MousePower extends LitElement {
     this.bankController.incrementInterest();
     this.resetMultiplicatorWhenDelayPassedAndNoMoreClick();
 
-    this.mouseEventManager.rightClick();
+    this.mouseEventController.rightClick();
   }
 
   private resetMultiplicatorWhenDelayPassedAndNoMoreClick =
@@ -266,19 +275,6 @@ export class MousePower extends LitElement {
 
   private onMouseMove = Timing.debounce((mouseEvent: MouseEvent): void => {
     this.bankController.createMoney(mouseEvent.clientX, mouseEvent.clientY);
-    this.mouseEventManager.move();
+    this.mouseEventController.move();
   }, this.#movementDebounceTimeInMs);
-
-  private timerFormat(timeInMs: number): string {
-    const timeInSeconds = Math.floor(timeInMs / 1000);
-    const hours = Math.floor(timeInSeconds / 3600);
-    const minutes = Math.floor((timeInSeconds % 3600) / 60);
-    const seconds = timeInSeconds % 60;
-
-    const formattedHours = hours.toString().padStart(2, "0");
-    const formattedMinutes = minutes.toString().padStart(2, "0");
-    const formattedSeconds = seconds.toString().padStart(2, "0");
-
-    return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
-  }
 }

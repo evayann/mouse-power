@@ -1,10 +1,10 @@
 import { LitElement, TemplateResult, css, html } from "lit";
-import { customElement, query } from "lit/decorators.js";
+import { customElement, property, query } from "lit/decorators.js";
 
 @customElement("auto-cursor")
 export class AutoCursor extends LitElement {
   @query(".cursor") cursor!: HTMLElement;
-
+  @property({ type: Number }) index!: number;
   static styles = css`
     :host {
       --radius: 200px;
@@ -34,6 +34,12 @@ export class AutoCursor extends LitElement {
     }
   `;
 
+  get animationList(): Animation[] {
+    return [this.getAnimations(), this.cursor?.getAnimations()]
+      .flat()
+      .filter((animation) => animation !== undefined);
+  }
+
   #createNewScoreIntervalInMs = 500;
   #timerReference: ReturnType<typeof setInterval>;
 
@@ -48,6 +54,8 @@ export class AutoCursor extends LitElement {
             x: Math.round(left + width / 2),
             y: Math.round(top + height / 2),
           },
+          bubbles: true,
+          composed: true,
         })
       );
     }, this.#createNewScoreIntervalInMs);

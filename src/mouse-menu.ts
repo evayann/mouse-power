@@ -1,11 +1,15 @@
 import { LitElement, TemplateResult, css, html } from "lit";
 import { customElement, property, query } from "lit/decorators.js";
+import { NumberValue } from "./classes/number-value.js";
 import { Notation } from "./models/notation.type.js";
 import { Theme } from "./models/theme.type.js";
 
 @customElement("mouse-menu")
 export class Menu extends LitElement {
   @query(".menu-dialog") menuDialog?: HTMLDialogElement;
+  @property({ type: String }) playTime!: string;
+  @property({ type: Object }) cashGain!: NumberValue;
+  @property({ type: Object }) interestGain!: NumberValue;
   @property({ type: Boolean })
   set isOpen(isOpen: boolean) {
     this._isOpen = isOpen;
@@ -21,14 +25,44 @@ export class Menu extends LitElement {
 
   static styles = css`
     dialog::backdrop {
-      background-color: rgba(0, 0, 0, 0.1);
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .menu-dialog[open] {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .menu-header {
+      display: flex;
+    }
+
+    .menu-header > :first-child {
+      margin-right: auto;
+    }
+
+    label,
+    label > * {
+      cursor: pointer;
+    }
+
+    .title {
+      font-weight: 700;
+    }
+
+    p + p:not([class]) {
+      margin-block: 0;
     }
   `;
 
   private _isOpen!: boolean;
 
   render(): TemplateResult {
-    return html`<dialog class="menu-dialog">
+    return html`<dialog class="menu-dialog" @close=${this.closeMenu}>
+      <div class="menu-header">
+        <p class="title">Menu</p>
+        <button @click=${this.closeMenu}>Close</button>
+      </div>
       <label>
         Theme dark
         <input
@@ -44,6 +78,18 @@ export class Menu extends LitElement {
           "scientific"}
           @change=${this.changeNotation}
       /></label>
+      <p class="title">Statistics</p>
+      <p>Time play: ${this.playTime}</p>
+      <p>Money earned: ${this.cashGain.display}</p>
+      <p>Interest earned: ${this.interestGain.display}</p>
+      <p class="title">What's this game ?</p>
+      <p>Just a fork of clicker game with mouvement.</p>
+      <p>
+        The idea is from
+        <a href="https://creativetechguy.com/mousepoint"
+          >https://creativetechguy.com/mousepoint</a
+        >
+      </p>
     </dialog>`;
   }
 
@@ -57,6 +103,7 @@ export class Menu extends LitElement {
       })
     );
   }
+
   private changeNotation(inputEvent: InputEvent): void {
     const target = inputEvent.currentTarget as HTMLInputElement;
     this.dispatchEvent(
@@ -66,6 +113,10 @@ export class Menu extends LitElement {
         },
       })
     );
+  }
+
+  private closeMenu(): void {
+    this.dispatchEvent(new CustomEvent("close"));
   }
 }
 
