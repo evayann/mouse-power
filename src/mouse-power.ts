@@ -35,6 +35,10 @@ export class MousePower extends LitElement {
   #isMenuOpen = false;
   #updateTimeout: ReturnType<typeof setTimeout>;
   #interestTimeout: ReturnType<typeof setTimeout>;
+  #actionsToBuyItems: Record<ItemName, () => void> = {
+    "auto-cursor": () => this.bonusController.addNewAutoCursor(),
+    "auto-cursor-level": () => this.bonusController.upgradeAutoCursor(),
+  };
 
   static styles = css`
     :host {
@@ -113,7 +117,7 @@ export class MousePower extends LitElement {
     }
 
     auto-cursor-manager {
-      width: 40px;
+      --size: 40px;
     }
   `;
 
@@ -238,12 +242,8 @@ export class MousePower extends LitElement {
   }
 
   private onBuy(itemName: ItemName): void {
-    const itemActions: Record<ItemName, () => void> = {
-      "auto-cursor": () => this.bonusController.addNewAutoCursor(),
-      "auto-cursor-speed": () => {},
-    };
     const nbActionToDo = this.shopController.buy(itemName);
-    const action = itemActions[itemName];
+    const action = this.#actionsToBuyItems[itemName];
     Array.from({ length: nbActionToDo }).forEach(action);
   }
 

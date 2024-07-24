@@ -12,15 +12,23 @@ export class AutoCursorManager extends LitElement {
 
   static styles = css`
     auto-cursor {
-      width: inherit;
+      width: var(--size);
+      height: var(--size);
     }
   `;
+
+  private rotationTimeInMs = 5000;
 
   render(): TemplateResult {
     return html`${repeat(
       this.autoCursorList,
       (_, index) => index,
-      ({ level }, index) => html`<auto-cursor .index=${index}></auto-cursor>`
+      ({ level }, index) =>
+        html`<auto-cursor
+          .index=${index}
+          .level=${level}
+          style=${`--rotation-time: ${this.rotationTimeInMs}ms`}
+        ></auto-cursor>`
     )}`;
   }
 
@@ -41,9 +49,8 @@ export class AutoCursorManager extends LitElement {
     const startTime = animationList.shift()?.currentTime as number;
     if (!startTime) return;
 
-    const rotationTime = 5000;
     const maxNbAutoursorOnCircle = 10;
-    const rotationOffset = rotationTime / maxNbAutoursorOnCircle;
+    const rotationOffset = this.rotationTimeInMs / maxNbAutoursorOnCircle;
     const nbAnimation = autoCursorList.length - 1;
     const newAnimationList = animationList.splice(-2, 2);
     newAnimationList.forEach(

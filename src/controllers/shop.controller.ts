@@ -6,7 +6,7 @@ import { NumberValue } from "../classes/number-value.js";
 export class ShopController {
   #items: Record<ItemName, Item> = {
     "auto-cursor": ShopItem.create(1.1, 10),
-    "auto-cursor-speed": ShopItem.create(1.5, 1),
+    "auto-cursor-level": ShopItem.create(1.5, 20),
   };
 
   #host: ReactiveControllerHost;
@@ -16,9 +16,14 @@ export class ShopController {
   #onKeyDownListener = (event: KeyboardEvent) => this.#onKeyDown(event);
   #onKeyUpListener = (event: KeyboardEvent) => this.#onKeyUp(event);
 
-  get itemList(): { name: ItemName; cost: NumberValue | undefined }[] {
+  get itemList(): {
+    name: ItemName;
+    nbItem: number;
+    cost: NumberValue | undefined;
+  }[] {
     return Object.entries(this.#items).map(([name, item]) => ({
       name: name as ItemName,
+      nbItem: this.#shiftModifier ? this.#nbItemIfModifier : 1,
       cost: this.#shiftModifier
         ? item.xNextCost(this.#nbItemIfModifier)
         : item.nextCost,

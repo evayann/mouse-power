@@ -13,12 +13,14 @@ export class ShopItem {
       },
 
       xNextCost(nbNextCost: number): NumberValue | undefined {
-        return this.currentUpgrade >= this.maxUpgrade
-          ? undefined
-          : new NumberValue(
-              this.cost.raw +
-                factor * Math.min(nbNextCost, this.nbUpgradeAvaible)
-            );
+        if (this.currentUpgrade >= this.maxUpgrade) return undefined;
+
+        const cost = Array.from({ length: nbNextCost }).reduce<number>(
+          (cost) => (cost += factor),
+          this.cost.raw
+        );
+
+        return new NumberValue(cost);
       },
 
       currentUpgrade: 0,

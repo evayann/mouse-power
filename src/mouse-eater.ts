@@ -13,10 +13,10 @@ export class MouseEater extends LitElement {
       justify-items: center;
 
       --apparition-timing: cubic-bezier(0.74, -0.83, 0.51, 1.34);
+    }
 
-      > * {
-        grid-area: 1 / 1;
-      }
+    :host > * {
+      grid-area: 1 / 1;
     }
 
     svg {

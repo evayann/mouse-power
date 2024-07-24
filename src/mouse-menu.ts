@@ -31,10 +31,13 @@ export class Menu extends LitElement {
     .menu-dialog[open] {
       display: flex;
       flex-direction: column;
+      align-items: flex-start;
     }
 
     .menu-header {
       display: flex;
+      justify-content: space-between;
+      width: 100%;
     }
 
     .menu-header > :first-child {
@@ -83,7 +86,7 @@ export class Menu extends LitElement {
       <p>Money earned: ${this.cashGain.display}</p>
       <p>Interest earned: ${this.interestGain.display}</p>
       <p class="title">What's this game ?</p>
-      <p>Just a fork of clicker game with mouvement.</p>
+      <p>Just a copy of clicker game with mouvement.</p>
       <p>
         The idea is from
         <a href="https://creativetechguy.com/mousepoint"
