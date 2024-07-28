@@ -33,7 +33,10 @@ export class AutoCursor extends LitElement {
       animation: rotate-around-mouse var(--rotation-time) linear infinite
         reverse;
       will-change: transform;
-      background-color: hsl(10, 40%, var(--level));
+    }
+
+    path {
+      fill: hsl(33, 99%, var(--level));
     }
   `;
 
@@ -64,7 +67,7 @@ export class AutoCursor extends LitElement {
     }, this.#createNewScoreIntervalInMs);
   }
 
-  disconnectedCallback() {
+  disconnectedCallback(): void {
     super.disconnectedCallback();
     clearInterval(this.#timerReference);
   }
@@ -78,7 +81,7 @@ export class AutoCursor extends LitElement {
         fill="none"
         viewBox="0 0 163 226"
         class="cursor"
-        style="--level: ${this.level * 10}%"
+        style="--level: ${(10 - this.level) * 10}%"
       >
         <path
           fill="#fff"

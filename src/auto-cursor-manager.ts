@@ -9,6 +9,9 @@ import { AutoCursor } from "./auto-cursor.js";
 export class AutoCursorManager extends LitElement {
   @queryAll("auto-cursor") autoCursorElementList!: NodeListOf<AutoCursor>;
   @property({ type: Array }) autoCursorList!: { level: number }[];
+  @property({ type: Number }) nbMaxAutoCursor!: number;
+
+  #rotationTimeInMs = 5000;
 
   static styles = css`
     auto-cursor {
@@ -16,8 +19,6 @@ export class AutoCursorManager extends LitElement {
       height: var(--size);
     }
   `;
-
-  private rotationTimeInMs = 5000;
 
   render(): TemplateResult {
     return html`${repeat(
@@ -27,7 +28,7 @@ export class AutoCursorManager extends LitElement {
         html`<auto-cursor
           .index=${index}
           .level=${level}
-          style=${`--rotation-time: ${this.rotationTimeInMs}ms`}
+          style=${`--rotation-time: ${this.#rotationTimeInMs}ms`}
         ></auto-cursor>`
     )}`;
   }
@@ -38,24 +39,24 @@ export class AutoCursorManager extends LitElement {
     const autoCursorList = [...this.autoCursorElementList].sort(
       (autoCursor1, autoCursor2) => autoCursor1.index - autoCursor2.index
     );
+
     await Promise.all(
       autoCursorList.map((autoCursor) => autoCursor.updateComplete)
     );
 
-    const animationList = autoCursorList.flatMap(
+    const animationListForCursorList = autoCursorList.map(
       (autoCursor) => autoCursor.animationList
     );
 
-    const startTime = animationList.shift()?.currentTime as number;
-    if (!startTime) return;
+    const startTime =
+      (animationListForCursorList.shift()?.[0]?.currentTime as number) ?? 0;
 
-    const maxNbAutoursorOnCircle = 10;
-    const rotationOffset = this.rotationTimeInMs / maxNbAutoursorOnCircle;
-    const nbAnimation = autoCursorList.length - 1;
-    const newAnimationList = animationList.splice(-2, 2);
-    newAnimationList.forEach(
-      (animation) =>
-        (animation.currentTime = startTime + nbAnimation * rotationOffset)
+    const rotationOffset = this.#rotationTimeInMs / this.nbMaxAutoCursor;
+    animationListForCursorList.forEach((animationTuple, index) =>
+      animationTuple.forEach(
+        (animation) =>
+          (animation.currentTime = startTime + (index + 1) * rotationOffset)
+      )
     );
   }
 }

@@ -62,10 +62,11 @@ export class BankController {
     this.#host.requestUpdate();
   }
 
-  cashInInterest(): void {
+  cashInInterest(): NumberValue {
     const interest = this.#bank.cashInInterest();
     this.statisticsController.addInterestCash(interest);
     this.#host.requestUpdate();
+    return new NumberValue(interest);
   }
 
   cashIn(id: string): void {

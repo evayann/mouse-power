@@ -4,11 +4,7 @@ import { Item, ItemName } from "../models/item.type.js";
 import { NumberValue } from "../classes/number-value.js";
 
 export class ShopController {
-  #items: Record<ItemName, Item> = {
-    "auto-cursor": ShopItem.create(1.1, 10),
-    "auto-cursor-level": ShopItem.create(1.5, 20),
-  };
-
+  #items: Record<ItemName, Item>;
   #host: ReactiveControllerHost;
   #shiftModifier = false;
   #nbItemIfModifier = 10;
@@ -30,8 +26,9 @@ export class ShopController {
     }));
   }
 
-  constructor(host: ReactiveControllerHost) {
+  constructor(host: ReactiveControllerHost, items: Record<ItemName, Item>) {
     this.#host = host;
+    this.#items = items;
     host.addController(this as any);
   }
 
@@ -48,12 +45,17 @@ export class ShopController {
   buy(itemName: ItemName): number {
     const item = this.#items[itemName];
 
+    const nbItemToBuy = Math.min(
+      this.#shiftModifier ? this.#nbItemIfModifier : 1,
+      item.nbUpgradeAvaible
+    );
+
     Array.from({
-      length: this.#shiftModifier ? this.#nbItemIfModifier : 1,
+      length: nbItemToBuy,
     }).forEach(() => item.buy());
 
     this.#host.requestUpdate();
-    return this.#shiftModifier ? this.#nbItemIfModifier : 1;
+    return nbItemToBuy;
   }
 
   nextCostOf(itemName: ItemName): NumberValue | undefined {

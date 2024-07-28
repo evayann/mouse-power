@@ -4,6 +4,7 @@ export class Bank {
   #intersetRatio = 0;
   #money = 0;
 
+  #interestAddByIncrement = 0.0001;
   #nbMoneyCreated = 0;
 
   get sold(): number {
@@ -12,10 +13,6 @@ export class Bank {
 
   get interestRatio(): number {
     return this.#intersetRatio;
-  }
-
-  private get interestPercent(): number {
-    return this.#intersetRatio / 100;
   }
 
   createMoney(): NumberValue {
@@ -27,7 +24,7 @@ export class Bank {
   }
 
   cashInInterest(): number {
-    const interest = this.#money * this.interestPercent;
+    const interest = this.#money * this.#intersetRatio;
     this.#money += interest;
     return interest;
   }
@@ -39,7 +36,10 @@ export class Bank {
   }
 
   incrementInterest(): void {
-    this.#intersetRatio += 0.0001;
+    this.#intersetRatio = Math.min(
+      2,
+      this.#intersetRatio + this.#interestAddByIncrement
+    );
   }
 
   resetInterest(): void {

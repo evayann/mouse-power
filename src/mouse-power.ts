@@ -1,5 +1,5 @@
-import { LitElement, TemplateResult, css, html } from "lit";
-import { customElement } from "lit/decorators.js";
+import { LitElement, PropertyValues, TemplateResult, css, html } from "lit";
+import { customElement, query } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
 
 import {
@@ -10,8 +10,8 @@ import {
   StatisticsController,
 } from "./controllers/index.js";
 
-import { Timing, NumberValue } from "./classes/index.js";
-import { ItemName, Notation, Theme } from "./models/index.js";
+import { Timing, NumberValue, ShopItem } from "./classes/index.js";
+import { Item, ItemName, Notation, Theme } from "./models/index.js";
 
 import "./auto-cursor-manager.js";
 import "./mouse-eater.js";
@@ -20,14 +20,15 @@ import "./mouse-usage.js";
 import "./mouse-menu.js";
 import "./money-created.js";
 
+let self: MousePower;
+
 @customElement("mouse-power")
 export class MousePower extends LitElement {
-  private statisticsController = new StatisticsController(this);
-  private mouseEventController = new MouseEventController(this);
-  private bankController = new BankController(this, this.statisticsController);
-  private shopController = new ShopController(this);
-  private bonusController = new BonusController(this);
+  @query(".interest") interestSpan!: HTMLSpanElement;
 
+  #nbMaxAutoCursor = 10;
+
+  #lastInterest = new NumberValue(0);
   #resetMultiplicatorTimeInMs = 2000;
   #movementDebounceTimeInMs = 100;
   #targetMinimalFps = 30;
@@ -35,10 +36,21 @@ export class MousePower extends LitElement {
   #isMenuOpen = false;
   #updateTimeout: ReturnType<typeof setTimeout>;
   #interestTimeout: ReturnType<typeof setTimeout>;
+
+  #items: Record<ItemName, Item> = {
+    "auto-cursor": ShopItem.create(1.1, this.#nbMaxAutoCursor),
+    "auto-cursor-level": ShopItem.create(1.5, 20),
+  };
   #actionsToBuyItems: Record<ItemName, () => void> = {
     "auto-cursor": () => this.bonusController.addNewAutoCursor(),
     "auto-cursor-level": () => this.bonusController.upgradeAutoCursor(),
   };
+
+  private statisticsController = new StatisticsController(this);
+  private mouseEventController = new MouseEventController(this);
+  private bankController = new BankController(this, this.statisticsController);
+  private shopController = new ShopController(this, this.#items);
+  private bonusController = new BonusController(this);
 
   static styles = css`
     :host {
@@ -75,6 +87,27 @@ export class MousePower extends LitElement {
     .status {
       display: flex;
       justify-content: space-evenly;
+    }
+
+    .money {
+      position: relative;
+    }
+
+    .money > .interest {
+      position: absolute;
+      top: 150%;
+      left: 40%;
+      opacity: 0;
+      transition: top 1s ease-in-out;
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: green;
+      text-shadow: 1px 1px white, -1px -1px white;
+    }
+
+    .money > .reveal {
+      opacity: 1;
+      top: 0;
     }
 
     mouse-eater {
@@ -127,6 +160,9 @@ export class MousePower extends LitElement {
 
   constructor() {
     super();
+
+    self = this;
+
     this.addEventListener("wheel", this.onMouseScroll);
     this.addEventListener("click", this.onMouseClick);
     this.addEventListener("contextmenu", this.onMouseContextMenu);
@@ -138,7 +174,18 @@ export class MousePower extends LitElement {
     );
 
     this.#interestTimeout = setInterval(() => {
-      this.bankController.cashInInterest();
+      const interest = this.bankController.cashInInterest();
+
+      const percentToDisplayInterest = 0.01;
+      const isInterestDisplay =
+        interest.raw -
+          this.bankController.sold.raw * percentToDisplayInterest >=
+        0;
+
+      if (interest.isLowerThan(0.1) || !isInterestDisplay) return;
+
+      this.#lastInterest = interest;
+      this.displayInterestIndicator();
       this.requestUpdate();
     }, 1000);
 
@@ -148,17 +195,29 @@ export class MousePower extends LitElement {
     );
   }
 
-  disconnectedCallback() {
+  firstUpdated(): void {
+    this.interestSpan.addEventListener(
+      "transitionend",
+      this.removeInterestIndicator
+    );
+  }
+
+  disconnectedCallback(): void {
     super.disconnectedCallback();
     this.removeEventListener("wheel", this.onMouseScroll);
     this.removeEventListener("click", this.onMouseClick);
     this.removeEventListener("contextmenu", this.onMouseContextMenu);
     this.removeEventListener("mousemove", this.onMouseMove);
 
+    this.interestSpan.removeEventListener(
+      "transitionend",
+      this.removeInterestIndicator
+    );
+
     clearInterval(this.#updateTimeout);
     clearInterval(this.#interestTimeout);
   }
-
+  isInterestIndicatorDisplay = false;
   render(): TemplateResult {
     return html`
       <header>
@@ -169,7 +228,22 @@ export class MousePower extends LitElement {
       </header>
       <main>
         <div class="status">
-          <p>Money:$${this.bankController.sold.display}</p>
+          <p
+            class="money"
+            @click=${() => {
+              this.isInterestIndicatorDisplay = true;
+              this.requestUpdate();
+            }}
+          >
+            Money:$${this.bankController.sold.display}
+            <span
+              class="interest ${this.isInterestIndicatorDisplay === true
+                ? "reveal"
+                : ""}"
+            >
+              Interest $${this.#lastInterest.display}
+            </span>
+          </p>
           <p>Timer:${this.statisticsController.playTime}</p>
           <p>Interest:${this.bankController.interest.display}</p>
         </div>
@@ -219,6 +293,7 @@ export class MousePower extends LitElement {
         </div>
         <auto-cursor-manager
           .autoCursorList=${this.bonusController.autoCursorList}
+          .nbMaxAutoCursor=${this.#nbMaxAutoCursor}
           @add-score=${({ detail }: CustomEvent<{ x: number; y: number }>) => {
             const { x, y } = detail;
             this.bankController.createMoney(x, y);
@@ -277,4 +352,14 @@ export class MousePower extends LitElement {
     this.bankController.createMoney(mouseEvent.clientX, mouseEvent.clientY);
     this.mouseEventController.move();
   }, this.#movementDebounceTimeInMs);
+
+  private displayInterestIndicator(): void {
+    this.isInterestIndicatorDisplay = true;
+    this.requestUpdate();
+  }
+
+  private removeInterestIndicator(): void {
+    self.isInterestIndicatorDisplay = false;
+    self.requestUpdate();
+  }
 }
