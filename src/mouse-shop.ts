@@ -9,11 +9,9 @@ export class MouseShop extends LitElement {
   @property({ type: Object }) currentMoney!: NumberValue;
   @property({ type: Array }) itemList: {
     name: ItemName;
-    nbItem: number;
+    costToFirstDisplay: NumberValue | undefined;
     cost: NumberValue | undefined;
   }[] = [];
-
-  static styles = css``;
 
   get #allNextCost(): NumberValue {
     return this.itemList.reduce(
@@ -24,12 +22,11 @@ export class MouseShop extends LitElement {
 
   get displayItemList(): {
     name: ItemName;
-    nbItem: number;
     cost: NumberValue | undefined;
   }[] {
     return this.itemList.filter(
-      ({ nbItem, cost }) =>
-        (cost?.raw ?? 0) / nbItem < this.currentMoney.raw * 1.25
+      ({ costToFirstDisplay }) =>
+        (costToFirstDisplay?.raw ?? 0) < this.currentMoney.raw * 1.25
     );
   }
 

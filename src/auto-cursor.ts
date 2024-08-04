@@ -59,6 +59,7 @@ export class AutoCursor extends LitElement {
           detail: {
             x: Math.round(left + width / 2),
             y: Math.round(top + height / 2),
+            level: this.level,
           },
           bubbles: true,
           composed: true,

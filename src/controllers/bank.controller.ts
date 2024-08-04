@@ -47,11 +47,11 @@ export class BankController {
     this.#host.requestUpdate();
   }
 
-  createMoney(x: number, y: number): void {
+  createMoney(x: number, y: number, multiplicator: number): void {
     this.#moneysCreated = {
       ...this.#moneysCreated,
       [BankController.COUNTER++]: {
-        value: this.#bank.createMoney(),
+        value: this.#bank.createMoney(Math.max(1, multiplicator)),
         displayTimeInMs: Math.round(500 + Math.random() * 1000),
         startPosition: {
           x,

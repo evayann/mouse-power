@@ -5,6 +5,7 @@ export type ItemName = "auto-cursor" | "auto-cursor-level";
 export type Item = {
   buy: () => void;
   xNextCost: (nbNextCost: number) => NumberValue | undefined;
+  firstCost: () => NumberValue;
   cost: NumberValue;
   nextCost: NumberValue | undefined;
   maxUpgrade: number;

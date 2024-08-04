@@ -2,7 +2,11 @@ import { Item } from "../models/item.type.js";
 import { NumberValue } from "./number-value.js";
 
 export class ShopItem {
-  static create(factor: number, maxUpgrade: number): Item {
+  static create(
+    factor: number,
+    maxUpgrade: number,
+    firstCost: number = 0
+  ): Item {
     let currentCost = new NumberValue(0);
 
     return {
@@ -18,9 +22,13 @@ export class ShopItem {
         const nbUpgradeBuyable = Math.min(nbNextCost, this.nbUpgradeAvaible);
         const cost = Array.from({
           length: nbUpgradeBuyable,
-        }).reduce<number>((cost) => (cost += factor), this.cost.raw);
+        }).reduce<number>((cost) => (cost += cost + factor), this.cost.raw);
 
         return new NumberValue(cost);
+      },
+
+      firstCost(): NumberValue {
+        return new NumberValue(firstCost);
       },
 
       currentUpgrade: 0,

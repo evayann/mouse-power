@@ -15,8 +15,10 @@ export class Bank {
     return this.#intersetRatio;
   }
 
-  createMoney(): NumberValue {
-    return new NumberValue(Math.log(this.#nbMoneyCreated + 1) + 1);
+  createMoney(multiplicator: number): NumberValue {
+    return new NumberValue(
+      Math.log(this.#nbMoneyCreated++ * multiplicator + 1) + 1
+    );
   }
 
   cashIn(money: number): void {

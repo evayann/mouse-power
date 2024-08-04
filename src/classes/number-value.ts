@@ -1,9 +1,12 @@
 import { Notation } from "../models/notation.type.js";
 
+import * as ADNotations from "@antimatter-dimensions/notations";
+
+const naturalNotation = new ADNotations.StandardNotation();
+const scientificNotation = new ADNotations.ScientificNotation();
+
 export class NumberValue {
-  static DEFAULT_PRECISION_TYPE: Notation = "natural";
-  private static readonly ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".toLowerCase();
-  private static readonly LARGE_KNOW_PREFIX = "KMBT";
+  static DEFAULT_TYPE: Notation = "natural";
 
   private displaysByNotation: Record<Notation, () => string> = {
     natural: () => this.displayNatural,
@@ -32,7 +35,7 @@ export class NumberValue {
   }
 
   private get notation(): Notation {
-    return this.options?.notation ?? NumberValue.DEFAULT_PRECISION_TYPE;
+    return this.options?.notation ?? NumberValue.DEFAULT_TYPE;
   }
 
   private get precision(): number {
@@ -40,12 +43,11 @@ export class NumberValue {
   }
 
   private get displayExponential(): string {
-    if (this.value < 1e3) return this.value.toFixed(1);
-    return this.value.toExponential(this.precision);
+    return scientificNotation.format(this.value, 2, 0);
   }
 
   private get displayNatural(): string {
-    return this.toShort(this.value);
+    return naturalNotation.format(this.value, 2, 0);
   }
 
   private get displayPercentage(): string {
@@ -66,30 +68,5 @@ export class NumberValue {
 
   isLowerThan(other: NumberValue | number): boolean {
     return this.raw < (typeof other === "number" ? other : other.raw);
-  }
-
-  private toShort(value: number): string {
-    const tier = Math.floor(Math.log10(Math.abs(value)) / 3) - 1;
-    if (tier < 0) return value.toFixed(this.precision);
-
-    const nbValueInTier = Math.log10(Math.abs(value)) % 3;
-    if (tier < NumberValue.LARGE_KNOW_PREFIX.length)
-      return `${value.toFixed(this.precision).slice(0, nbValueInTier + 1)}${
-        NumberValue.LARGE_KNOW_PREFIX[tier]
-      }`;
-
-    const moduloTier =
-      (tier - NumberValue.LARGE_KNOW_PREFIX.length) %
-      NumberValue.ALPHABET.length;
-    const letter = NumberValue.ALPHABET[moduloTier];
-    const nbLetter = Math.floor(
-      (tier - NumberValue.LARGE_KNOW_PREFIX.length) /
-        NumberValue.ALPHABET.length
-    );
-    const suffix = letter.repeat(nbLetter + 1);
-
-    return `${value
-      .toFixed(this.precision)
-      .slice(0, nbValueInTier + 1)}${suffix}`;
   }
 }

@@ -294,9 +294,12 @@ export class MousePower extends LitElement {
         <auto-cursor-manager
           .autoCursorList=${this.bonusController.autoCursorList}
           .nbMaxAutoCursor=${this.#nbMaxAutoCursor}
-          @add-score=${({ detail }: CustomEvent<{ x: number; y: number }>) => {
-            const { x, y } = detail;
-            this.bankController.createMoney(x, y);
+          @add-score=${({
+            detail,
+          }: CustomEvent<{ x: number; y: number; level: number }>) => {
+            const { x, y, level } = detail;
+
+            this.bankController.createMoney(x, y, level);
             this.requestUpdate();
           }}
         ></auto-cursor-manager>
@@ -305,7 +308,7 @@ export class MousePower extends LitElement {
   }
 
   private onChangeNotation(notation: Notation): void {
-    NumberValue.DEFAULT_PRECISION_TYPE = notation;
+    NumberValue.DEFAULT_TYPE = notation;
     localStorage.setItem("notation", notation);
     this.requestUpdate();
   }
@@ -349,7 +352,7 @@ export class MousePower extends LitElement {
     }, this.#resetMultiplicatorTimeInMs);
 
   private onMouseMove = Timing.debounce((mouseEvent: MouseEvent): void => {
-    this.bankController.createMoney(mouseEvent.clientX, mouseEvent.clientY);
+    this.bankController.createMoney(mouseEvent.clientX, mouseEvent.clientY, 1);
     this.mouseEventController.move();
   }, this.#movementDebounceTimeInMs);
 
