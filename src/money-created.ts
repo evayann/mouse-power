@@ -88,6 +88,7 @@ export class MoneyCreated extends LitElement {
       margin: 0;
       font-size: 10px;
       margin: 10px 20px;
+      color: black;
     }
   `;
 

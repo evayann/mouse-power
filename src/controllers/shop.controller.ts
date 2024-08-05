@@ -41,7 +41,7 @@ export class ShopController {
     window.removeEventListener("keyup", this.#onKeyUpListener);
   }
 
-  buy(itemName: ItemName): number {
+  buy(itemName: ItemName): { nbItemToBuy: number; upgradeCost: number } {
     const item = this.#items[itemName];
 
     const nbItemToBuy = Math.min(
@@ -49,12 +49,12 @@ export class ShopController {
       item.nbUpgradeAvaible
     );
 
-    Array.from({
+    const upgradeCost = Array.from({
       length: nbItemToBuy,
-    }).forEach(() => item.buy());
+    }).reduce<number>((acc) => (acc += item.buy()), 0);
 
     this.#host.requestUpdate();
-    return nbItemToBuy;
+    return { nbItemToBuy, upgradeCost };
   }
 
   nextCostOf(itemName: ItemName): NumberValue | undefined {

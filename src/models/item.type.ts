@@ -3,7 +3,7 @@ import { NumberValue } from "../classes/number-value.js";
 export type ItemName = "auto-cursor" | "auto-cursor-level";
 
 export type Item = {
-  buy: () => void;
+  buy: () => number;
   xNextCost: (nbNextCost: number) => NumberValue | undefined;
   firstCost: () => NumberValue;
   cost: NumberValue;

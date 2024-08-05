@@ -77,4 +77,9 @@ export class BankController {
     this.statisticsController.addCashIn(moneyGain);
     this.#host.requestUpdate();
   }
+
+  cashOut(value: number): void {
+    this.#bank.cashOut(value);
+    this.#host.requestUpdate();
+  }
 }

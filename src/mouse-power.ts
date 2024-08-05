@@ -1,24 +1,24 @@
-import { LitElement, PropertyValues, TemplateResult, css, html } from "lit";
+import { LitElement, TemplateResult, css, html } from "lit";
 import { customElement, query } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
 
 import {
   BankController,
+  BonusController,
   MouseEventController,
   ShopController,
-  BonusController,
   StatisticsController,
 } from "./controllers/index.js";
 
-import { Timing, NumberValue, ShopItem } from "./classes/index.js";
+import { NumberValue, ShopItem, Timing } from "./classes/index.js";
 import { Item, ItemName, Notation, Theme } from "./models/index.js";
 
 import "./auto-cursor-manager.js";
+import "./money-created.js";
 import "./mouse-eater.js";
+import "./mouse-menu.js";
 import "./mouse-shop.js";
 import "./mouse-usage.js";
-import "./mouse-menu.js";
-import "./money-created.js";
 
 let self: MousePower;
 
@@ -38,8 +38,8 @@ export class MousePower extends LitElement {
   #interestTimeout: ReturnType<typeof setTimeout>;
 
   #items: Record<ItemName, Item> = {
-    "auto-cursor": ShopItem.create(1.1, this.#nbMaxAutoCursor),
-    "auto-cursor-level": ShopItem.create(1.5, 20),
+    "auto-cursor": ShopItem.create(1000, this.#nbMaxAutoCursor),
+    "auto-cursor-level": ShopItem.create(100, 100),
   };
   #actionsToBuyItems: Record<ItemName, () => void> = {
     "auto-cursor": () => this.bonusController.addNewAutoCursor(),
@@ -189,7 +189,16 @@ export class MousePower extends LitElement {
       this.requestUpdate();
     }, 1000);
 
-    this.onChangeTheme((localStorage.getItem("theme") as Theme) ?? "light");
+    const defaultSystemIsDark = window.matchMedia(
+      "(prefers-color-scheme: dark)"
+    );
+    const lastSelectedTheme = localStorage.getItem("theme") as
+      | Theme
+      | undefined;
+    const theme =
+      lastSelectedTheme ?? (defaultSystemIsDark.matches ? "dark" : "light");
+    this.onChangeTheme(theme);
+
     this.onChangeNotation(
       (localStorage.getItem("notation") as Notation) ?? "natural"
     );
@@ -320,9 +329,11 @@ export class MousePower extends LitElement {
   }
 
   private onBuy(itemName: ItemName): void {
-    const nbActionToDo = this.shopController.buy(itemName);
+    const { nbItemToBuy, upgradeCost } = this.shopController.buy(itemName);
     const action = this.#actionsToBuyItems[itemName];
-    Array.from({ length: nbActionToDo }).forEach(action);
+    Array.from({ length: nbItemToBuy }).forEach(action);
+    this.bankController.cashOut(upgradeCost);
+    this.requestUpdate();
   }
 
   private onMouseScroll(): void {

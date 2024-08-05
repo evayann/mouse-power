@@ -5,7 +5,8 @@ export class Bank {
   #money = 0;
 
   #interestAddByIncrement = 0.0001;
-  #nbMoneyCreated = 0;
+  #moneyCreated = 0;
+  #moneyCreationFactor = 0.01;
 
   get sold(): number {
     return this.#money;
@@ -17,7 +18,9 @@ export class Bank {
 
   createMoney(multiplicator: number): NumberValue {
     return new NumberValue(
-      Math.log(this.#nbMoneyCreated++ * multiplicator + 1) + 1
+      Math.log(
+        (this.#moneyCreated += this.#moneyCreationFactor * multiplicator + 1)
+      ) + 1
     );
   }
 

@@ -24,10 +24,16 @@ export class MouseShop extends LitElement {
     name: ItemName;
     cost: NumberValue | undefined;
   }[] {
-    return this.itemList.filter(
-      ({ costToFirstDisplay }) =>
-        (costToFirstDisplay?.raw ?? 0) < this.currentMoney.raw * 1.25
+    const moneyNearToUpgradeCost = (cost?: NumberValue): boolean =>
+      (cost?.raw ?? 0) < this.currentMoney.raw * 1.25;
+
+    const indexToKeep = this.itemList.findIndex(
+      ({ costToFirstDisplay }) => !moneyNearToUpgradeCost(costToFirstDisplay)
     );
+
+    return indexToKeep < 0
+      ? this.itemList
+      : this.itemList.slice(0, indexToKeep);
   }
 
   render(): TemplateResult {

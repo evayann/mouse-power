@@ -15,7 +15,8 @@
         margin: 0;
         padding: 0;
         font-family: sans-serif;
-        background-color: #ededed;
+        color: var(--text);
+        background-color: var(--background);
         width: 100dvw;
         height: 100dvh;
         overflow: hidden;
@@ -39,13 +40,17 @@
       }
 
       html {
-        --primary: red;
-        --secondary: blue;
+        --text: #021526;
+        --cta: #03346e;
+        --background: #ededed;
+        --backdrop: rgba(0, 0, 0, 0.5);
       }
 
       html[theme="dark"] {
-        --primary: darkred;
-        --secondary: darkblue;
+        --text: #e2e2b6;
+        --cta: #6eacda;
+        --background: #021526;
+        --backdrop: rgba(255, 255, 255, 0.5);
       }
     </style>
     <title>Mouse-power</title>

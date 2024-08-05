@@ -25,13 +25,15 @@ export class Menu extends LitElement {
 
   static styles = css`
     dialog::backdrop {
-      background-color: rgba(0, 0, 0, 0.5);
+      background-color: var(--backdrop);
     }
 
     .menu-dialog[open] {
       display: flex;
       flex-direction: column;
       align-items: flex-start;
+
+      color: var(--text);
     }
 
     .menu-header {
@@ -55,6 +57,11 @@ export class Menu extends LitElement {
 
     p + p:not([class]) {
       margin-block: 0;
+    }
+
+    dialog {
+      background-color: var(--background);
+      opacity: 0.9;
     }
   `;
 
