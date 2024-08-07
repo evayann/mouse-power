@@ -8,7 +8,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "git switch gh-pages; git pull origin main; npm i; npm run build; mkdir todelete; mv * todelete/; mv todelete/dist/* .; rm -rf todelete; git add .; git commit -m 'Deploy new version of mouse power'; git push; git switch main"
   },
   "dependencies": {
     "@antimatter-dimensions/notations": "^3.2.0",
