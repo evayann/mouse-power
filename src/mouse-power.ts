@@ -294,7 +294,7 @@ export class MousePower extends LitElement {
               html`<money-created
                 value=${moneyCreated.value.display}
                 .fromPosition=${moneyCreated.startPosition}
-                .toPosition=${{ x: 50, y: 50 }}
+                .toPosition=${{ x: 47.5, y: 52.5 }}
                 .displayTimeInMs=${moneyCreated.displayTimeInMs}
                 @is-old=${() => this.bankController.cashIn(id)}
               />`
