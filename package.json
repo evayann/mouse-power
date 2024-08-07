@@ -7,7 +7,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build --base-path=.",
     "preview": "vite preview",
     "deploy": "git switch gh-pages; git fetch origin; git reset --hard origin/main; npm i; npm run build; mkdir todelete; mv * todelete/; mv todelete/dist/* .; rm -rf todelete; git add .; git commit -m 'Deploy new version of mouse power'; git push origin gh-pages --force; git switch main"
   },
