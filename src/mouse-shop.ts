@@ -1,8 +1,8 @@
-import { LitElement, TemplateResult, css, html, nothing } from "lit";
+import { LitElement, TemplateResult, html, nothing } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
-import { ItemName, allItemNameList } from "./models/item.type.js";
 import { NumberValue } from "./classes/number-value.js";
+import { ItemName, allItemNameList } from "./models/item.type.js";
 
 @customElement("mouse-shop")
 export class MouseShop extends LitElement {
